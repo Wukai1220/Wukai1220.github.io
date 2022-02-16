@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wukai.me","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="今天把我的博客从 Jekyll 转到了 Hexo 上，因为一直用的是 Windows系统，而在 Windows 系统下面安装Ruby和使用 Jekyll 的时候会出现各种奇怪的问题。虽然问题都在Google的帮助下解决了，但是也让我一直不敢修改博客主题，生怕一不小心解决了一个问题又多出来了几十个问题。 最终我决定改用 Hexo 来搭建我的博客。在 GitHub 上看了不少 Hexo 的主题后，发现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="将博客从Jekyll迁移至Hexo">
+<meta property="og:url" content="http://www.wukai.me/2016/01/13/blog-jekyll-to-hexo/index.html">
+<meta property="og:site_name" content="吴锴的博客">
+<meta property="og:description" content="今天把我的博客从 Jekyll 转到了 Hexo 上，因为一直用的是 Windows系统，而在 Windows 系统下面安装Ruby和使用 Jekyll 的时候会出现各种奇怪的问题。虽然问题都在Google的帮助下解决了，但是也让我一直不敢修改博客主题，生怕一不小心解决了一个问题又多出来了几十个问题。 最终我决定改用 Hexo 来搭建我的博客。在 GitHub 上看了不少 Hexo 的主题后，发现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2016-01-13-traditional-chinese.png">
+<meta property="article:published_time" content="2016-01-12T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-21T13:55:03.543Z">
+<meta property="article:author" content="noiron">
+<meta property="article:tag" content="hexo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.wukai.me/asset/images/2016-01-13-traditional-chinese.png">
+
+<link rel="canonical" href="http://www.wukai.me/2016/01/13/blog-jekyll-to-hexo/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>将博客从Jekyll迁移至Hexo | 吴锴的博客</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111511044-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-111511044-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">吴锴的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Life? Don't talk to me about life!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-demo">
+
+    <a href="/demo/" rel="section"><i class="fa fa-rocket fa-fw"></i>个人项目</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2016/01/13/blog-jekyll-to-hexo/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="noiron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="吴锴的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          将博客从Jekyll迁移至Hexo
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-01-13 00:00:00" itemprop="dateCreated datePublished" datetime="2016-01-13T00:00:00+08:00">2016-01-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>今天把我的博客从 Jekyll 转到了 Hexo 上，因为一直用的是 Windows系统，而在 Windows 系统下面安装Ruby和使用 Jekyll 的时候会出现各种奇怪的问题。虽然问题都在Google的帮助下解决了，但是也让我一直不敢修改博客主题，生怕一不小心解决了一个问题又多出来了几十个问题。</p>
+<p>最终我决定改用 Hexo 来搭建我的博客。在 GitHub 上看了不少 Hexo 的主题后，发现了几个对我胃口的主题：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/litten/hexo-theme-yilia">yilia</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/iissnan/hexo-theme-next">NexT</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/A-limon/pacman">Pacman</a></li>
+</ul>
+<p>最终我决定使用<strong>yilia</strong>了。</p>
+<h2 id="一、安装Node-js和Hexo"><a href="#一、安装Node-js和Hexo" class="headerlink" title="一、安装Node.js和Hexo"></a>一、安装Node.js和Hexo</h2><p>关于安装的教程已经有很多了，不需要赘述，可以参考这些：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://wsgzao.github.io/post/hexo-guide/">使用GitHub和Hexo搭建免费静态Blog</a><br><a target="_blank" rel="noopener" href="https://xuanwo.org/2015/03/26/hexo-intor/">史上最详细的Hexo博客搭建图文教程</a></p>
+</blockquote>
+<p>我这里就记录一下我遇到的问题。</p>
+<span id="more"></span>
+<h2 id="二、解决的问题"><a href="#二、解决的问题" class="headerlink" title="二、解决的问题"></a>二、解决的问题</h2><h3 id="jekyll和hexo文件名的区别"><a href="#jekyll和hexo文件名的区别" class="headerlink" title="jekyll和hexo文件名的区别"></a>jekyll和hexo文件名的区别</h3><p>在jekyll下，我使用的文件命名格式为<code>2015-12-28-threejs-collision.md</code>，这样生成的文章地址为<code>/2015/12/28/threejs-collision/</code>。但是在hexo中，默认情况下生成的地址会是<code>/2015/12/28/2015-12-28-threejs-collision/</code>，这明显不是我们想要的，所以在 _config.yml 中修改 new_post_name 参数。</p>
+<pre><code>new_post_name: :year-:month-:day-:title.md
+</code></pre><p>还有要注意的一点是，文件名里的 2016-1-8 要写成 2016-01-08，前面要加数字0，才能得到预期结果。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://reverland.org/web/2015/11/18/notes-on-migrating-from-jeykll-to-hexo/">从Jekyll迁移到Hexo</a><br><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/migration.html">官方文档</a></p>
+</blockquote>
+<h3 id="标签的大小写问题"><a href="#标签的大小写问题" class="headerlink" title="标签的大小写问题"></a>标签的大小写问题</h3><p>由于我之前用作 tag 的单词包含了大小写，比如”JavaScript”和”javascript”是两个不同的标签，这样会导致一些奇怪的404问题。所以我决定所有的 tag 一律使用小写，设置：</p>
+<pre><code>filename_case: 1
+</code></pre><p>表示生成的网址全部为小写单词。</p>
+<p>然后为了保证 GitHub 的 tags 目录也全部为小写，需要删除本地 publish 文件夹下的 tags 目录，执行<code>hexo d</code>命令后，GitHub上的 tags 文件夹也会被删除。最后<code>hexo g -d</code>，重新生成 tags 文件夹，就能保证博客不会因为大小写的问题而出现404错误了。</p>
+<h3 id="首页语言为繁体中文"><a href="#首页语言为繁体中文" class="headerlink" title="首页语言为繁体中文"></a>首页语言为繁体中文</h3><p>在默认情况下，首页的菜单项显示为繁体中文。</p>
+<p><img src="/asset/images/2016-01-13-traditional-chinese.png" alt=""></p>
+<p>修改在 themes/yilia 文件夹下的 _config.yml 中的语言项：</p>
+<pre><code>language: zh-Hans
+</code></pre><p>之后执行命令：</p>
+<pre><code>hexo clean
+hexo server
+</code></pre><p>发现问题解决。</p>
+<h3 id="开启多说"><a href="#开启多说" class="headerlink" title="开启多说"></a>开启多说</h3><p>在主题的 _config.yml 文件中修改：</p>
+<pre><code>duoshuo: &quot;noironblog&quot;
+</code></pre><p>后面的值为你可以在登录多说的站点管理界面时的网址中找到：</p>
+<p>我的网址为：<code>http://noironblog.duoshuo.com/admin</code>，对应的值为”noironblog”。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/litten/hexo-theme-yilia/issues/7">多说配置 #7</a><br><a target="_blank" rel="noopener" href="https://github.com/litten/hexo-theme-yilia/issues/60">多说配置问题 #60</a></p>
+</blockquote>
+<h3 id="加入头像图片"><a href="#加入头像图片" class="headerlink" title="加入头像图片"></a>加入头像图片</h3><p>在 themes/yilia/source/img 文件夹下放入头像图片 avatar.jpg，并设置：</p>
+<pre><code>avatar: /img/avatar.jpg 
+</code></pre><p>这样就能显示头像图片。</p>
+<h3 id="加入RSS"><a href="#加入RSS" class="headerlink" title="加入RSS"></a>加入RSS</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="http://hanhailong.com/2015/10/08/Hexo%E2%80%94%E6%AD%A3%E7%A1%AE%E6%B7%BB%E5%8A%A0RSS%E8%AE%A2%E9%98%85/">Hexo—正确添加RSS订阅</a></p>
+</blockquote>
+<h2 id="三、尚未解决的问题"><a href="#三、尚未解决的问题" class="headerlink" title="三、尚未解决的问题"></a>三、尚未解决的问题</h2><h3 id="GitHub上原有的commit记录没了"><a href="#GitHub上原有的commit记录没了" class="headerlink" title="GitHub上原有的commit记录没了"></a>GitHub上原有的commit记录没了</h3><p>在使用<code>hexo g -d</code>命令后，hexo 直接将新的博客部署到了 GitHub 上，并清空了原先我使用 jekyll 博客时的记录。虽然我在本地保存了整个项目文件，但是不知道还能不能恢复到GitHub上。</p>
+<h3 id="博客的markdown文件没有同步"><a href="#博客的markdown文件没有同步" class="headerlink" title="博客的markdown文件没有同步"></a>博客的markdown文件没有同步</h3><p>hexo 部署文件时，只是将生成的网页资源放在了GitHub上，但是 _posts文件夹下 .md 文件没有同步，现在我使用 Dropbox 进行保存。也许之后可以新建一个 repo 或分支来保存这些文件。</p>
+<h3 id="没有在首页建立项目页"><a href="#没有在首页建立项目页" class="headerlink" title="没有在首页建立项目页"></a>没有在首页建立项目页</h3><p>原先使用的主题在首页有一个 Demo 页，需要在这里也建立一个。</p>
+<hr>
+<p>最后，修改一些配置项，就完成了将博客从 Jelyll 迁移至 Hexo 的任务。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>noiron
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://www.wukai.me/2016/01/13/blog-jekyll-to-hexo/" title="将博客从Jekyll迁移至Hexo">http://www.wukai.me/2016/01/13/blog-jekyll-to-hexo/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/hexo/" rel="tag"># hexo</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/01/08/javascript-event-stream/" rel="prev" title="《JavaScript高级程序设计》学习笔记：JavaScript中的事件流和事件处理程序">
+      <i class="fa fa-chevron-left"></i> 《JavaScript高级程序设计》学习笔记：JavaScript中的事件流和事件处理程序
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/01/14/waterfall-layout/" rel="next" title="学习笔记：瀑布流布局">
+      学习笔记：瀑布流布局 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%AE%89%E8%A3%85Node-js%E5%92%8CHexo"><span class="nav-number">1.</span> <span class="nav-text">一、安装Node.js和Hexo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text">二、解决的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#jekyll%E5%92%8Chexo%E6%96%87%E4%BB%B6%E5%90%8D%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">2.1.</span> <span class="nav-text">jekyll和hexo文件名的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E7%AD%BE%E7%9A%84%E5%A4%A7%E5%B0%8F%E5%86%99%E9%97%AE%E9%A2%98"><span class="nav-number">2.2.</span> <span class="nav-text">标签的大小写问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A6%96%E9%A1%B5%E8%AF%AD%E8%A8%80%E4%B8%BA%E7%B9%81%E4%BD%93%E4%B8%AD%E6%96%87"><span class="nav-number">2.3.</span> <span class="nav-text">首页语言为繁体中文</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E5%90%AF%E5%A4%9A%E8%AF%B4"><span class="nav-number">2.4.</span> <span class="nav-text">开启多说</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5%E5%A4%B4%E5%83%8F%E5%9B%BE%E7%89%87"><span class="nav-number">2.5.</span> <span class="nav-text">加入头像图片</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5RSS"><span class="nav-number">2.6.</span> <span class="nav-text">加入RSS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%B0%9A%E6%9C%AA%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">三、尚未解决的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GitHub%E4%B8%8A%E5%8E%9F%E6%9C%89%E7%9A%84commit%E8%AE%B0%E5%BD%95%E6%B2%A1%E4%BA%86"><span class="nav-number">3.1.</span> <span class="nav-text">GitHub上原有的commit记录没了</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%9A%E5%AE%A2%E7%9A%84markdown%E6%96%87%E4%BB%B6%E6%B2%A1%E6%9C%89%E5%90%8C%E6%AD%A5"><span class="nav-number">3.2.</span> <span class="nav-text">博客的markdown文件没有同步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E5%9C%A8%E9%A6%96%E9%A1%B5%E5%BB%BA%E7%AB%8B%E9%A1%B9%E7%9B%AE%E9%A1%B5"><span class="nav-number">3.3.</span> <span class="nav-text">没有在首页建立项目页</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="noiron"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">noiron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/noiron" title="GitHub → https://github.com/noiron" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wukai2048@gmail.com" title="E-Mail → mailto:wukai2048@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-robot"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">noiron</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'neutral',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '684d40de22e47860da99',
+      clientSecret: '5217c37e4a30ba8e3bb6a6658e1023d458139164',
+      repo        : 'noiron.github.io',
+      owner       : 'noiron',
+      admin       : ['noiron'],
+      id          : '5d88f0add7472bc7a95aaefc4f0409ce',
+        language: '',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

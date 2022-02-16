@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wukai.me","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前段时间用 React 写了个2048 游戏来练练手，准备用来回顾下 React 相关的各种技术，以及试验一下新技术。在写这个2048的过程中，我考虑是否可以在其中加入一个 AI 算法来自动进行游戏，于是我找到了这篇文章：2048-AI程序算法分析，文中介绍了 minimax 算法和 alpha-beta 剪枝算法。于是我决定先学习下这两种算法，并以此写了这个 tic-tac-toe 游戏：tic">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Minimax 和 Alpha-beta 剪枝算法简介，及以此实现的井字棋游戏（Tic-tac-toe）">
+<meta property="og:url" content="http://www.wukai.me/2018/03/04/minimax-alpha-beta-pruning-and-tic-tac-toe/index.html">
+<meta property="og:site_name" content="吴锴的博客">
+<meta property="og:description" content="前段时间用 React 写了个2048 游戏来练练手，准备用来回顾下 React 相关的各种技术，以及试验一下新技术。在写这个2048的过程中，我考虑是否可以在其中加入一个 AI 算法来自动进行游戏，于是我找到了这篇文章：2048-AI程序算法分析，文中介绍了 minimax 算法和 alpha-beta 剪枝算法。于是我决定先学习下这两种算法，并以此写了这个 tic-tac-toe 游戏：tic">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2018-03-04-data-tree.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2018-03-04-data-tree-mark.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2018-03-04-subtree.png">
+<meta property="article:published_time" content="2018-03-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-21T13:55:03.546Z">
+<meta property="article:author" content="noiron">
+<meta property="article:tag" content="javascript">
+<meta property="article:tag" content="minimax">
+<meta property="article:tag" content="alpha-beta pruning">
+<meta property="article:tag" content="游戏">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.wukai.me/asset/images/2018-03-04-data-tree.png">
+
+<link rel="canonical" href="http://www.wukai.me/2018/03/04/minimax-alpha-beta-pruning-and-tic-tac-toe/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Minimax 和 Alpha-beta 剪枝算法简介，及以此实现的井字棋游戏（Tic-tac-toe） | 吴锴的博客</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111511044-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-111511044-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">吴锴的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Life? Don't talk to me about life!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-demo">
+
+    <a href="/demo/" rel="section"><i class="fa fa-rocket fa-fw"></i>个人项目</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2018/03/04/minimax-alpha-beta-pruning-and-tic-tac-toe/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="noiron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="吴锴的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Minimax 和 Alpha-beta 剪枝算法简介，及以此实现的井字棋游戏（Tic-tac-toe）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-04 00:00:00" itemprop="dateCreated datePublished" datetime="2018-03-04T00:00:00+08:00">2018-03-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>前段时间用 React 写了个<a target="_blank" rel="noopener" href="https://github.com/noiron/react-2048">2048 游戏</a>来练练手，准备用来回顾下 React 相关的各种技术，以及试验一下新技术。在写这个2048的过程中，我考虑是否可以在其中加入一个 AI 算法来自动进行游戏，于是我找到了这篇文章：<a target="_blank" rel="noopener" href="http://blog.codinglabs.org/articles/2048-ai-analysis.html">2048-AI程序算法分析</a>，文中介绍了 minimax 算法和 alpha-beta 剪枝算法。于是我决定先学习下这两种算法，并以此写了这个 tic-tac-toe 游戏：<a target="_blank" rel="noopener" href="https://tic-tac-toe-js-app.herokuapp.com/">tic-tac-toe-js</a>（<a target="_blank" rel="noopener" href="https://github.com/noiron/tic-tac-toe-js">代码见此处</a>）。本文将说明如何用 JavaScript 来简单地实现算法，并将其运用到 tic-tac-toe 游戏中。</p>
+<span id="more"></span>
+<h2 id="Minimax-算法简介"><a href="#Minimax-算法简介" class="headerlink" title="Minimax 算法简介"></a>Minimax 算法简介</h2><p>我觉得要解释 minimax 算法的原理，需要用示意图来解释更清晰，以下的几篇文章都对原理说的足够清楚。</p>
+<blockquote>
+<ol>
+<li><a target="_blank" rel="noopener" href="http://blog.codinglabs.org/articles/2048-ai-analysis.html">2048-AI程序算法分析</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.neverstopbuilding.com/blog/2013/12/13/tic-tac-toe-understanding-the-minimax-algorithm13/">Tic Tac Toe: Understanding the Minimax Algorithm</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.flyingmachinestudios.com/programming/minimax/">An Exhaustive Explanation of Minimax, a Staple AI Algorithm</a></li>
+</ol>
+</blockquote>
+<p>其中后面的两篇文章都是以 tic-tac-toe 游戏为例，并用 Ruby 实现。</p>
+<p>以棋类游戏为例来说明 minimax 算法，每一个棋盘的状态都会对应一个分数。双方将会轮流下棋。轮到我方下子时，我会选择分数最高的状态；而对方会选择对我最不利的状态。可以这么认为，每次我都需要从对手给我选择的最差（min）局面中选出最好（max）的一个，这就是这个算法名称 <strong>minimax</strong> 的意义。</p>
+<p><img src="/asset/images/2018-03-04-data-tree.png" alt="minimax tree"><br>（图片来自于 <a target="_blank" rel="noopener" href="http://web.cs.ucla.edu/~rosen/161/notes/alphabeta.html）">http://web.cs.ucla.edu/~rosen/161/notes/alphabeta.html）</a></p>
+<p>我们接下来会解决这样一个问题，如上图所示，正方形的节点对应于我的决策，圆形的节点是对手的决策。双方轮流选择一个分支，我的目标是让最后选出的数字尽可能大，对方的目标是让这个数字尽可能小。</p>
+<h2 id="Minimax-算法的实现"><a href="#Minimax-算法的实现" class="headerlink" title="Minimax 算法的实现"></a>Minimax 算法的实现</h2><p>为了简单起见，对于这个特定的问题，我用了一个嵌套的数组来表示状态树。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> dataTree = [</span><br><span class="line">    [</span><br><span class="line">        [</span><br><span class="line">            [<span class="number">3</span>, <span class="number">17</span>], [<span class="number">2</span>, <span class="number">12</span>]</span><br><span class="line">        ],</span><br><span class="line">        [</span><br><span class="line">            [<span class="number">15</span>], [<span class="number">25</span>, <span class="number">0</span>]</span><br><span class="line">        ]</span><br><span class="line">    ],</span><br><span class="line">    [</span><br><span class="line">        [</span><br><span class="line">            [<span class="number">2</span>, <span class="number">5</span>], [<span class="number">3</span>]</span><br><span class="line">        ],</span><br><span class="line">        [</span><br><span class="line">            [<span class="number">2</span>, <span class="number">14</span>]</span><br><span class="line">        ]</span><br><span class="line">    ]</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+<p>图中的节点分为两种类型：</p>
+<ol>
+<li><strong>Max 节点</strong>：图中的正方形节点，对应于我的回合，它会选取所有子节点中的最大值作为自身的值</li>
+<li><strong>Min 节点</strong>：图中的圆形节点，对应于对手的回合，它会选取所有子节点中的最小值作为自身的值</li>
+</ol>
+<p>先定义一个 <code>Node</code> 类，<code>constructor</code> 如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">constructor</span>(<span class="params">data, type, depth</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.data = data;</span><br><span class="line">    <span class="built_in">this</span>.type = type; <span class="comment">// 区分此节点的种类是 max 或 min</span></span><br><span class="line">    <span class="built_in">this</span>.depth = depth;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根节点的 <code>depth</code> 为0，以下的每一层 <code>depth</code> 依次加一。最底层的节点 <code>depth</code> 为4，其 <code>data</code> 是写在图中的数字，其它层节点的 <code>data</code> 均是一个数组。</p>
+<p>接下来考虑如何给每个节点打分，可能会出现这样的几种情况：</p>
+<ol>
+<li>最底层的节点，直接返回本身的数字</li>
+<li>中间层的 max 节点，返回子节点中的最大分数</li>
+<li>中间层的 min 节点，返回子节点中的最小分数</li>
+</ol>
+<p>为方便描述，我们按照由上到下、由左到右的顺序给图中节点进行标号。节点1是 max 节点，从节点2和节点3中选择较大值；而对于节点2来说，需要从节点4，5中选取较小值。很显然，我们这里要用递归的方法来实现，当搜索到最底层的节点时，递归过程开始返回。</p>
+<p><img src="/asset/images/2018-03-04-data-tree-mark.png" alt="minimax tree mark"></p>
+<p>以下是打分函数 <code>score</code> 的具体代码： </p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">score</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="comment">// 到达了最大深度后，此时的 data 是数组最内层的数字</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.depth &gt;= <span class="number">4</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对于 max 节点，返回的是子节点中的最大值</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.type === <span class="string">&#x27;max&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">let</span> maxScore = -<span class="number">1000</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="built_in">this</span>.data.length; i++) &#123;</span><br><span class="line">            <span class="keyword">const</span> d = <span class="built_in">this</span>.data[i];</span><br><span class="line">            <span class="comment">// 生成新的节点，子节点的 type 会和父节点不同</span></span><br><span class="line">            <span class="keyword">const</span> childNode = <span class="keyword">new</span> Node(d, changeType(<span class="built_in">this</span>.type), <span class="built_in">this</span>.depth + <span class="number">1</span>);</span><br><span class="line">            <span class="comment">// 递归获取其分数</span></span><br><span class="line">            <span class="keyword">const</span> childScore = childNode.score();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (childScore &gt; maxScore) &#123;</span><br><span class="line">                maxScore = childScore;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> maxScore;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 对于 min 节点，返回的是子节点中的最小值</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">this</span>.type === <span class="string">&#x27;min&#x27;</span>) &#123;</span><br><span class="line">        <span class="comment">// 与上方代码相似，省略部分代码</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/noiron/tic-tac-toe-js/blob/master/algorithms/minimax.js">完整的 minimax 算法代码</a> </p>
+</blockquote>
+<h2 id="Alpha-beta-剪枝算法简介"><a href="#Alpha-beta-剪枝算法简介" class="headerlink" title="Alpha-beta 剪枝算法简介"></a>Alpha-beta 剪枝算法简介</h2><p>Alpha-beta 剪枝算法可以认为是 minimax 算法的一种改进，在实际的问题中，需要搜索的状态数量将会非常庞大，利用 alpha-beta 剪枝算法可以去除一些不必要的搜索。</p>
+<p>关于 alpha-beta 算法的具体解释可以看这篇文章 <a target="_blank" rel="noopener" href="http://web.cs.ucla.edu/~rosen/161/notes/alphabeta.html">Minimax with Alpha Beta Pruning</a>。我们在前文中考虑的那张图就来自这篇文章，之后我们会用 alpha-beta 剪枝算法来改进之前的解决方案。</p>
+<p>剪枝算法中主要有这么些概念：</p>
+<p>每一个节点都会由 alpha 和 beta 两个值来确定一个范围 [alpha, beta]，alpha 值代表的是下界，beta 代表的是上界。每搜索一个子节点，都会按规则对范围进行修正。</p>
+<p>Max 节点可以修改 alpha 值，min 节点修改 beta 值。</p>
+<p>如果出现了 beta &lt;= alpha 的情况，则不用搜索更多的子树了，未搜索的这部分子树将被忽略，这个操作就被称作<strong>剪枝（pruning）</strong>。</p>
+<p>接下来我会尽量说明为什么剪枝这个操作是合理的，省略了一部分节点为什么不会对结果产生影响。用原图中以4号节点（第三层的第一个节点）为根节点的子树来举例，方便描述这里将他们用 A - G 的字母来重新标记。</p>
+<p><img src="/asset/images/2018-03-04-subtree.png" alt="子树"></p>
+<p>从 B 节点看起，B 是 min 节点，需要在 D 和 E 中寻找较小值，因此 B 取值为3，同时 B 的 beta 值也设置为 3。假设 B 还有更多值大于3的子节点，但因为已经出现了 D 这个最小值，所以不会对 B 产生影响，即这里的 beta = 3 确定了一个上界。</p>
+<p>A 是 max 节点，需要在 B 和 C 中找到较大值，因为子树 B 已经搜索完毕，B 的值确定为 3，所以 A 的值至少为 3，这样确定了 A 的下界 alpha = 3。在搜索 C 子树之前，我们<strong>希望 C 的值大于3</strong>，这样才会对 A 的下界 alpha 产生影响。于是 C 从 A 这里获得了下界 alpha = 3 这个限制条件。</p>
+<p>C 是 min 节点，要从 F 和 G 里找出较小值。F 的值为2，所以 C 的值一定小于等于 2，更新 C 的上界 beta = 2。此时 C 的 alpha = 3, beta = 2，这是一个空区间，也就是说即使继续考虑 C 的其它子节点， 也<strong>不可能让 C 的值大于 3</strong>，所以我们不必再考虑 G 节点。G 节点就是被剪枝的节点。</p>
+<p>重复这样的过程，会有更多的节点因为剪枝操作被忽略，从而对 minimax 算法进行了优化。</p>
+<h2 id="Alpha-beta-剪枝算法的实现"><a href="#Alpha-beta-剪枝算法的实现" class="headerlink" title="Alpha-beta 剪枝算法的实现"></a>Alpha-beta 剪枝算法的实现</h2><p>接下来讨论如何修改前面实现的 minimax 算法，使其变为 alpha-beta 剪枝算法。</p>
+<p>第一步在 constructor 中加入两个新属性，alpha、beta。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">constructor</span>(<span class="params">data, type, depth, alpha, beta</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.data = data;</span><br><span class="line">    <span class="built_in">this</span>.type = type; <span class="comment">// 区分此节点的种类是 max 或 min</span></span><br><span class="line">    <span class="built_in">this</span>.depth = depth;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">this</span>.alpha = alpha || -<span class="literal">Infinity</span>;</span><br><span class="line">    <span class="built_in">this</span>.beta = beta || <span class="literal">Infinity</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后每次都搜索会视情况更新 alpha, beta 的值，以下的代码片段来自于搜索 max 节点的过程：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// alphabeta.js 中的 score() 函数</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="built_in">this</span>.data.length; i++) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (childScore &gt; maxScore) &#123;</span><br><span class="line">        maxScore = childScore;</span><br><span class="line">        <span class="comment">// 相对于 minimax 算法，alpha-beta 剪枝算法在这里增加了一个更新 alpha 值的操作</span></span><br><span class="line">        <span class="built_in">this</span>.alpha = maxScore;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果满足了退出的条件，我们不需要继续搜索更多的节点了，退出循环</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.alpha &gt;= <span class="built_in">this</span>.beta) &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>相对应的是在 min 节点中，我们更新的将是 beta 值。好了，只需要做这么些简单的改变，就将 minimax 算法改变成了 alpha-beta 剪枝算法了。</p>
+<p>最后看看如何将算法应用到 tic-tac-toe 游戏中。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/noiron/tic-tac-toe-js/blob/master/algorithms/alphabeta.js">完整的 alpha-beta 剪枝算法代码</a> </p>
+</blockquote>
+<h2 id="Tic-tac-toe-游戏中的应用"><a href="#Tic-tac-toe-游戏中的应用" class="headerlink" title="Tic-tac-toe 游戏中的应用"></a>Tic-tac-toe 游戏中的应用</h2><p>Tic-tac-toe，即井字棋游戏，规则是在双方轮流在 3x3 的棋盘上的任意位置下子，率先将三子连成一线的一方获胜。</p>
+<p>这就是一个非常适合用 minimax 来解决的问题，即使在不考虑对称的情况，所有的游戏状态也只有 9! = 362880 种，相比于其它棋类游戏天文数字般的状态数量已经很少了，因而很适合作为算法的示例。</p>
+<p>我在代码中将棋盘的状态用一个长度为9的数组来表示，然后利用 canvas 绘制出一个简易的棋盘，下子的过程就是修改数组的对应位置然后重绘画面。</p>
+<p>现在我们已经有了现成的 minimax 和 alpha-beta 剪枝算法，只要加上一点儿细节就能完成这个游戏了😀。</p>
+<p>先来定义一个 <code>GameState</code> 类，其中保存了游戏的状态，对应于之前分析过程中的节点，其 <code>constructor</code> 如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">constructor</span>(<span class="params">board, player, depth, alpha, beta</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.board = board;</span><br><span class="line">    <span class="comment">// player 是用字符 X 和 O 来标记当前由谁下子，以此来判断当前是 max 还是 min 节点</span></span><br><span class="line">    <span class="built_in">this</span>.playerTurn = player;</span><br><span class="line">    <span class="built_in">this</span>.depth = depth;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 保存分数最高或最低的状态，用于确定下一步的棋盘状态</span></span><br><span class="line">    <span class="built_in">this</span>.choosenState = <span class="literal">null</span>;</span><br><span class="line">    <span class="built_in">this</span>.alpha = alpha || -<span class="literal">Infinity</span>;</span><br><span class="line">    <span class="built_in">this</span>.beta = beta || <span class="literal">Infinity</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为进行游戏，首先需要一个 <code>checkFinish</code> 函数，检查游戏是否结束，结束时返回胜利者信息。搜索的过程是在 <code>getScore</code> 函数中完成的，每次搜索先检查游戏是否结束，平局返回零分，我们的算法是站在 AI 的角度来考虑的，因此 AI 胜利时返回10分，AI 失利时返回-10分。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// alphabeta.js 中的 getScore() 方法</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> winner = <span class="built_in">this</span>.checkFinish();</span><br><span class="line"><span class="keyword">if</span> (winner) &#123;</span><br><span class="line">    <span class="keyword">if</span> (winner === <span class="string">&#x27;draw&#x27;</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (winner === aiToken) <span class="keyword">return</span> <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">10</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接着是对 max 和 min 节点的分类处理：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// alphabeta.js 中的 getScore() 方法</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 获得所有可能的位置，利用 shuffle 加入随机性</span></span><br><span class="line"><span class="keyword">const</span> availablePos = _.shuffle(<span class="built_in">this</span>.getAvailablePos());</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对于 max 节点，返回的是子节点中的最大值</span></span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">this</span>.playerTurn === aiToken) &#123;</span><br><span class="line">    <span class="keyword">let</span> maxScore = -<span class="number">1000</span>;</span><br><span class="line">    <span class="keyword">let</span> maxIndex = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; availablePos.length; i++) &#123;</span><br><span class="line">        <span class="keyword">const</span> pos = availablePos[i];</span><br><span class="line">        <span class="comment">// 在给定的位置下子，生成一个新的棋盘</span></span><br><span class="line">        <span class="keyword">const</span> newBoard = <span class="built_in">this</span>.generateNewBoard(pos, <span class="built_in">this</span>.playerTurn);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 生成一个新的节点</span></span><br><span class="line">        <span class="keyword">const</span> childState = <span class="keyword">new</span> GameState(newBoard, changeTurn(<span class="built_in">this</span>.playerTurn), <span class="built_in">this</span>.depth + <span class="number">1</span>, <span class="built_in">this</span>.alpha, <span class="built_in">this</span>.beta);</span><br><span class="line">        <span class="comment">// 这里开始递归调用 getScore() 函数</span></span><br><span class="line">        <span class="keyword">const</span> childScore = childState.getScore();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (childScore &gt; maxScore) &#123;</span><br><span class="line">            maxScore = childScore;</span><br><span class="line">            maxIndex = i;</span><br><span class="line">            <span class="comment">// 这里保存产生了最大的分数的节点，之后会被用于进行下一步</span></span><br><span class="line">            <span class="built_in">this</span>.choosenState = childState;</span><br><span class="line">            <span class="built_in">this</span>.alpha = maxScore;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.alpha &gt;= <span class="built_in">this</span>.beta) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> maxScore;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// min 节点的处理与上面类似</span></span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>完整代码见<a target="_blank" rel="noopener" href="https://github.com/noiron/tic-tac-toe-js/blob/master/src/alphabeta.js">alphabeta.js</a></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这样就简单地介绍了 minimax 算法和 alpha-beta 算法，并分别给出了一个简单的实现，然后在 tic-tac-toe 游戏中应用了算法。</p>
+<p>文章中所提到的所有代码可见此项目：<a target="_blank" rel="noopener" href="https://github.com/noiron/tic-tac-toe-js">Tic-tac-toe-js</a>。其中的 <code>algorithms</code> 文件夹中是两种算法的简单实现，<code>src</code> 文件中是游戏的代码。</p>
+<p>文章开头说到了这篇文章起源于写2048游戏项目的过程中，之后我将 minimax 算法应用到了2048游戏的 AI 中，不过对于局面的评估函数尚不完善，现在 AI 只能勉强合成1024😢， 还有很大的改进空间。 </p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>noiron
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://www.wukai.me/2018/03/04/minimax-alpha-beta-pruning-and-tic-tac-toe/" title="Minimax 和 Alpha-beta 剪枝算法简介，及以此实现的井字棋游戏（Tic-tac-toe）">http://www.wukai.me/2018/03/04/minimax-alpha-beta-pruning-and-tic-tac-toe/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/javascript/" rel="tag"># javascript</a>
+              <a href="/tags/minimax/" rel="tag"># minimax</a>
+              <a href="/tags/alpha-beta-pruning/" rel="tag"># alpha-beta pruning</a>
+              <a href="/tags/%E6%B8%B8%E6%88%8F/" rel="tag"># 游戏</a>
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/01/01/2017-annual-summary/" rel="prev" title="2017年总结">
+      <i class="fa fa-chevron-left"></i> 2017年总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/01/01/2018-annual-summary/" rel="next" title="2018年总结">
+      2018年总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Minimax-%E7%AE%97%E6%B3%95%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">Minimax 算法简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Minimax-%E7%AE%97%E6%B3%95%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">Minimax 算法的实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Alpha-beta-%E5%89%AA%E6%9E%9D%E7%AE%97%E6%B3%95%E7%AE%80%E4%BB%8B"><span class="nav-number">3.</span> <span class="nav-text">Alpha-beta 剪枝算法简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Alpha-beta-%E5%89%AA%E6%9E%9D%E7%AE%97%E6%B3%95%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.</span> <span class="nav-text">Alpha-beta 剪枝算法的实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tic-tac-toe-%E6%B8%B8%E6%88%8F%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">Tic-tac-toe 游戏中的应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="noiron"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">noiron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/noiron" title="GitHub → https://github.com/noiron" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wukai2048@gmail.com" title="E-Mail → mailto:wukai2048@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-robot"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">noiron</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'neutral',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '684d40de22e47860da99',
+      clientSecret: '5217c37e4a30ba8e3bb6a6658e1023d458139164',
+      repo        : 'noiron.github.io',
+      owner       : 'noiron',
+      admin       : ['noiron'],
+      id          : '7de707f4121b8a35cd887823d7149b7b',
+        language: '',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

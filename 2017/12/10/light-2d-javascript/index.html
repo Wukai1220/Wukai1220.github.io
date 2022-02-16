@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wukai.me","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Any application that can be written in JavaScript, will eventually be written in JavaScript.– Atwood’s Law  本文来源于我在看了 Milo Yip 在知乎专栏里的这篇文章：《用 C 语言画光（一）：基础》之后的一个想法，能不能将原文中 C 语言版本程序改成 JavaScript 版本的。动手">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用 JavaScript 画光：基础">
+<meta property="og:url" content="http://www.wukai.me/2017/12/10/light-2d-javascript/index.html">
+<meta property="og:site_name" content="吴锴的博客">
+<meta property="og:description" content="Any application that can be written in JavaScript, will eventually be written in JavaScript.– Atwood’s Law  本文来源于我在看了 Milo Yip 在知乎专栏里的这篇文章：《用 C 语言画光（一）：基础》之后的一个想法，能不能将原文中 C 语言版本程序改成 JavaScript 版本的。动手">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2017-12-10-sphere-tracing.jpg">
+<meta property="article:published_time" content="2017-12-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-21T13:55:03.545Z">
+<meta property="article:author" content="noiron">
+<meta property="article:tag" content="javascript">
+<meta property="article:tag" content="计算机图形学">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.wukai.me/asset/images/2017-12-10-sphere-tracing.jpg">
+
+<link rel="canonical" href="http://www.wukai.me/2017/12/10/light-2d-javascript/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>用 JavaScript 画光：基础 | 吴锴的博客</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111511044-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-111511044-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">吴锴的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Life? Don't talk to me about life!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-demo">
+
+    <a href="/demo/" rel="section"><i class="fa fa-rocket fa-fw"></i>个人项目</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2017/12/10/light-2d-javascript/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="noiron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="吴锴的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          用 JavaScript 画光：基础
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-12-10 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-10T00:00:00+08:00">2017-12-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Any application that <strong>can</strong> be written in JavaScript, <strong>will</strong> eventually be written in JavaScript.<br>– Atwood’s Law</p>
+</blockquote>
+<p>本文来源于我在看了 Milo Yip 在知乎专栏里的这篇文章：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/30745861">《用 C 语言画光（一）：基础》</a>之后的一个想法，能不能将原文中 C 语言版本程序改成 JavaScript 版本的。动手之后发现出乎意料的顺利，我只需要把 C 语言中变量的类型通通去掉就可以了😀，Amazing！</p>
+<span id="more"></span>
+<p>最终结果可见此 CodePen：<a target="_blank" rel="noopener" href="https://codepen.io/noiron/pen/aVgYMB?editors=1010">https://codepen.io/noiron/pen/aVgYMB?editors=1010</a></p>
+<p><p data-height="400" data-theme-id="0" data-slug-hash="aVgYMB" data-default-tab="result" data-user="noiron" data-embed-version="2" data-pen-title="aVgYMB" class="codepen">See the Pen <a target="_blank" rel="noopener" href="https://codepen.io/noiron/pen/aVgYMB/">aVgYMB</a> by wu kai (<a target="_blank" rel="noopener" href="https://codepen.io/noiron">@noiron</a>) on <a target="_blank" rel="noopener" href="https://codepen.io">CodePen</a>.</p></p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+
+<p>在本文中，我主要解释一下 JavaScript 如何将图像输出，以及我对这个画光程序的一点理解。更多有关图形学原理部分的内容，建议还是看 Milo Yip 的原文。</p>
+<h2 id="如何输出图像"><a href="#如何输出图像" class="headerlink" title="如何输出图像"></a>如何输出图像</h2><p>Milo Yip 在他的系列文章中使用了一个自己写的 <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/26525083">svpng()</a> 函数，能够根据得到的图形数据生成 <code>png</code> 格式的图片。而使用 JavaScript 可以方便地在 <code>canvas</code> 元素上绘制出图形。</p>
+<p>为了能够记录下图片的信息，需要记录每一个像素点的 <code>RGB</code> 值，对于一张宽度为 W，高度为 H 的图片，其像素点数量为 <code>W * H</code>，而每个像素点分别用三个数来表示其 R、G、B 值，所以记录下整张图片的数据，需要一个长度为 <code>W * H * 3</code> 的数组。如果图片带有 alpha 通道，需要记录 <code>RGBA</code> 值，则数组长度为 <code>W * H * 4</code>。这里有一个可以简化的地方，因为绘制的是一张黑白的图片，对于黑/白/灰色来说 R = G = B，所以用长度 <code>W * H</code> 的数组即可。</p>
+<p>假设我们现在已经有了一个记录图片信息的数组 <code>p</code>，那么如何将其显示出来？这里需要用到 <code>getImageData</code>, <code>putImageData</code> 方法。</p>
+<p>可以利用 <code>getImageData()</code> 方法来获得 ImageData 对象，从中得到图像的像素点。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> ctx = canvas.getContext(<span class="string">&#x27;2d&#x27;</span>)</span><br><span class="line"><span class="comment">// 获取 ImageData 对象</span></span><br><span class="line"><span class="keyword">const</span> imageData = ctx.getImageData(x, y, width, height)</span><br></pre></td></tr></table></figure>
+<p><code>ImageData</code> 对象的 <code>data</code> 属性是一个数组，包含有每个像素点的 <code>RGBA</code>，其总长度为 <code>W * H * 4</code>。所以我们将记录图片信息的数组 <code>p</code> 中的值依序赋给 <code>data</code>，再利用 <code>putImageData</code> 方法即可将图片绘制到 canvas 上了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">processImageData</span>(<span class="params">imageData, p</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> data = imageData.data;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; data.length; i += <span class="number">4</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> value = p[i / <span class="number">4</span>];</span><br><span class="line">        data[i] = value;</span><br><span class="line">        data[i + <span class="number">1</span>] = value;</span><br><span class="line">        data[i + <span class="number">2</span>] = value;</span><br><span class="line">        data[i + <span class="number">3</span>] = <span class="number">255</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">processImageData(imageData, p);</span><br><span class="line">ctx.putImageData(imageData, <span class="number">0</span>, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="如何获得一个点的光照强度"><a href="#如何获得一个点的光照强度" class="headerlink" title="如何获得一个点的光照强度"></a>如何获得一个点的光照强度</h2><p>现在我们考虑的是单色光，RGB 中的三个值是相等的，当光照越强时，RGB 值越大，图像的颜色也越白。</p>
+<p>坐标为 (x, y) 的一个点，它获得的光来自于各个方向上的光的叠加，即是一个对角度的积分：</p>
+<p>$$F\left( x,y\right) =\int ^{2\pi }_{0}L\left( x,y,\theta \right) d\theta$$</p>
+<p>其中 $L\left( x,y,\theta \right)$ 代表在二维坐标 (x, y) 在 $\theta$ 方向有多少光经过。</p>
+<p>由于无法直接计算出这个积分的值，需要用<strong>蒙特卡罗积分法</strong>来进行采样。利用 N 个方向的采样平均值作为这一点的光强。</p>
+<p>那么 (x, y) 点在 $\theta$ 方向上能获得多少光照？我们现在只有一个处于画面中央的圆形光源，可考虑从 (x, y) 为起点的一条线段，如果它足够长，那只有两种可能性：</p>
+<ul>
+<li>终结于光源的表面，则 (x, y) 点在 $\theta$ 方向能获得光照</li>
+<li>与光源无交点，则此方向上无光照</li>
+</ul>
+<p>但我们需要对这条线段的长度加以限制，所以逐步加长线段的长度，如果线段终点在光源的表面或内部，则获得光照。当步数达到 <code>MAX_STEP</code> 或距离达到 <code>MAX_DISTANCE</code>，停止计算，在此方向上获得的光照为0。</p>
+<p>这里需要利用<strong>带符号距离场（signed distance field, SDF）</strong>来表示出当前的点与场景的最近距离，每次步进此距离能保证不会进入光源的内部。如下图中，每个圆的半径均为圆心和图中形状的最近距离，则按 P0 -&gt; P1 -&gt; P2 -&gt; … 的顺序前进能保证不会和图中的形状相交。 </p>
+<p><img src="/asset/images/2017-12-10-sphere-tracing.jpg" alt="sphere-tracing"><br>（图源：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter08.html）">https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter08.html）</a></p>
+<p>此即原文中提到的<strong>光线步进（ray marching）</strong>方法（又称为<strong>球体追踪／sphere tracing</strong>）。</p>
+<h2 id="JavaScript-的实现"><a href="#JavaScript-的实现" class="headerlink" title="JavaScript 的实现"></a>JavaScript 的实现</h2><p>利用 <code>sample()</code> 函数计算并保存所有坐标点的光照：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> p = [];</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> y = <span class="number">0</span>, i = <span class="number">0</span>; y &lt; HEIGHT; y++) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> x = <span class="number">0</span>; x &lt; WIDTH; x++) &#123;</span><br><span class="line">        <span class="comment">// x / W, y / H 其值被限制在 [0, 1] 之间</span></span><br><span class="line">        p[i++] = <span class="built_in">Math</span>.floor(<span class="built_in">Math</span>.min(sample(x / WIDTH, y / HEIGHT) * <span class="number">255</span>, <span class="number">255</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>利用蒙特卡罗积分法进行 N 次采样取平均值获得 (x, y) 处的光照强度，其中的 <code>trace()</code> 函数代表的是从 $\theta$ 方向获取的光强。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sample</span>(<span class="params">x, y</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="comment">// 以下为三种不同的采样方式</span></span><br><span class="line">        <span class="comment">// const theta = Math.PI * 2 * Math.random();           // 随机采样</span></span><br><span class="line">        <span class="comment">// const theta = Math.PI * 2 * i / N;                   // 分层采样（stratified sampling）</span></span><br><span class="line">        <span class="keyword">const</span> theta = <span class="built_in">Math</span>.PI * <span class="number">2</span> * (i + <span class="built_in">Math</span>.random()) / N;    <span class="comment">// 抖动采样（jittered sampling）</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// trace() 所返回的值是点 (x, y) 从 theta 方向获取的光</span></span><br><span class="line">        sum += trace(x, y, <span class="built_in">Math</span>.cos(theta), <span class="built_in">Math</span>.sin(theta));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sum / N;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>circleSDF</code> 为带符号距离场（signed distance field, SDF），值为负时，表示在光源的内部。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">circleSDF</span>(<span class="params">x, y, cx, cy, r</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> ux = x - cx;</span><br><span class="line">    <span class="keyword">const</span> uy = y - cy;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Math</span>.sqrt(ux * ux + uy * uy) - r;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后就是 <code>trace()</code> 方法，用<strong>光线步进</strong>来计算出 (ox, oy) 沿单位向量 (dx, dy) 方向上获得的光照。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">trace</span>(<span class="params">ox, oy, dx, dy</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> MAX_STEP = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">const</span> MAX_DISTANCE = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">const</span> EPSILON = <span class="number">1e-6</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> t = <span class="number">0.0</span>;    <span class="comment">// t 为步进的距离</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; MAX_STEP &amp;&amp; t &lt; MAX_DISTANCE; i++) &#123;</span><br><span class="line">        <span class="comment">// 光源中心为 (sourceX, sourceY) </span></span><br><span class="line">        <span class="comment">// 沿单位向量 (dx, dy) 方向前进，t 表示前进的距离</span></span><br><span class="line">        <span class="keyword">const</span> sd = circleSDF(ox + dx * t, oy + dy * t, sourceX, sourceY, <span class="number">0.1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 此时已到达发光的圆形表面</span></span><br><span class="line">        <span class="keyword">if</span> (sd &lt; EPSILON) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">2.0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 继续增加步进的距离</span></span><br><span class="line">        t += sd;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0.0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后我还在代码添加了一个点击事件，可以改变光源位置来查看不同的效果。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://github.com/YIXUNFE/blog/issues/12">Canvas 操作图像像素</a></p>
+<hr>
+<p>[<strong>2018-01-01 更新</strong>]<br>在 GitHub 上建立了一个项目，准备将《用C语言画光》系列文章中的代码都移植到 JavaScipt 中来。<br>项目地址：<a target="_blank" rel="noopener" href="https://github.com/noiron/light2d-javascript">light2d-javascript</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>noiron
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://www.wukai.me/2017/12/10/light-2d-javascript/" title="用 JavaScript 画光：基础">http://www.wukai.me/2017/12/10/light-2d-javascript/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/javascript/" rel="tag"># javascript</a>
+              <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6/" rel="tag"># 计算机图形学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/12/09/boid-path-following/" rel="prev" title="塔防游戏中的敌人如何沿路径前进 (JavaScript 实现)">
+      <i class="fa fa-chevron-left"></i> 塔防游戏中的敌人如何沿路径前进 (JavaScript 实现)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/12/31/rich-text-editor-in-less-than-200-lines-javascript/" rel="next" title="不到200行 JavaScript 代码如何实现富文本编辑器">
+      不到200行 JavaScript 代码如何实现富文本编辑器 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%BE%93%E5%87%BA%E5%9B%BE%E5%83%8F"><span class="nav-number">1.</span> <span class="nav-text">如何输出图像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%8E%B7%E5%BE%97%E4%B8%80%E4%B8%AA%E7%82%B9%E7%9A%84%E5%85%89%E7%85%A7%E5%BC%BA%E5%BA%A6"><span class="nav-number">2.</span> <span class="nav-text">如何获得一个点的光照强度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JavaScript-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">JavaScript 的实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="noiron"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">noiron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/noiron" title="GitHub → https://github.com/noiron" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wukai2048@gmail.com" title="E-Mail → mailto:wukai2048@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-robot"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">noiron</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'neutral',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '684d40de22e47860da99',
+      clientSecret: '5217c37e4a30ba8e3bb6a6658e1023d458139164',
+      repo        : 'noiron.github.io',
+      owner       : 'noiron',
+      admin       : ['noiron'],
+      id          : 'de2fd74f37c99cabe414bc66e21a818c',
+        language: '',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

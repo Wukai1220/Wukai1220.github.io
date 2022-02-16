@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wukai.me","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前段时间电影《疯狂动物城》上映了，然后我的知乎首页就被它刷屏了。虽然我对这部电影没有任何意见，但作为一个还没去电影院看过的人来说，每看到相关问题一次都是无情的剧透，于是我毅然屏蔽了“疯狂动物园”这个话题。本以为问题解决了，但是接下来我又被迫看到这个问题：  问题上添加的五个话题无一命中，我又被剧透了一脸。算了，既然知乎的屏蔽规则靠不住，那就自己动手吧。这样我的Chrome浏览器扩展——ZhihuF">
+<meta property="og:type" content="article">
+<meta property="og:title" content="开发一个用于屏蔽知乎网内容的Chrome扩展">
+<meta property="og:url" content="http://www.wukai.me/2016/03/25/chrome-extension-zhihufilter/index.html">
+<meta property="og:site_name" content="吴锴的博客">
+<meta property="og:description" content="前段时间电影《疯狂动物城》上映了，然后我的知乎首页就被它刷屏了。虽然我对这部电影没有任何意见，但作为一个还没去电影院看过的人来说，每看到相关问题一次都是无情的剧透，于是我毅然屏蔽了“疯狂动物园”这个话题。本以为问题解决了，但是接下来我又被迫看到这个问题：  问题上添加的五个话题无一命中，我又被剧透了一脸。算了，既然知乎的屏蔽规则靠不住，那就自己动手吧。这样我的Chrome浏览器扩展——ZhihuF">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2016-03-25-zhihu-filter1.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2016-03-25-zhihu-filter-demo1.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2016-03-25-icon.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2016-03-25-popup.png">
+<meta property="article:published_time" content="2016-03-24T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-21T13:55:03.544Z">
+<meta property="article:author" content="noiron">
+<meta property="article:tag" content="javascript">
+<meta property="article:tag" content="chrome扩展">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.wukai.me/asset/images/2016-03-25-zhihu-filter1.png">
+
+<link rel="canonical" href="http://www.wukai.me/2016/03/25/chrome-extension-zhihufilter/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>开发一个用于屏蔽知乎网内容的Chrome扩展 | 吴锴的博客</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111511044-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-111511044-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">吴锴的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Life? Don't talk to me about life!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-demo">
+
+    <a href="/demo/" rel="section"><i class="fa fa-rocket fa-fw"></i>个人项目</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2016/03/25/chrome-extension-zhihufilter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="noiron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="吴锴的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          开发一个用于屏蔽知乎网内容的Chrome扩展
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-25 00:00:00" itemprop="dateCreated datePublished" datetime="2016-03-25T00:00:00+08:00">2016-03-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>前段时间电影《疯狂动物城》上映了，然后我的知乎首页就被它刷屏了。虽然我对这部电影没有任何意见，但作为一个还没去电影院看过的人来说，每看到相关问题一次都是无情的剧透，于是我毅然屏蔽了“疯狂动物园”这个话题。本以为问题解决了，但是接下来我又被迫看到这个问题：</p>
+<p><img src="/asset/images/2016-03-25-zhihu-filter1.png" alt=""></p>
+<p>问题上添加的五个话题无一命中，我又被剧透了一脸。算了，既然知乎的屏蔽规则靠不住，那就自己动手吧。这样我的Chrome浏览器扩展——ZhihuFilter就诞生了，<a target="_blank" rel="noopener" href="https://github.com/noiron/ZhihuFilter">点击这里查看Github上的项目</a>。</p>
+<h2 id="扩展功能"><a href="#扩展功能" class="headerlink" title="扩展功能"></a>扩展功能</h2><p>其实扩展的功能很简单，当打开知乎首页后，扩展会依次检查你的屏蔽关键词列表是否出现在了某一个答案中，如果出现了，就会把这个答案隐藏，取而代之的是提示信息和一个展开答案的按钮。效果如下图所示：</p>
+<p><img src="/asset/images/2016-03-25-zhihu-filter-demo1.png" alt=""></p>
+<p>你可以点击图中的按钮来查看答案，之后可以选择再次隐藏或展开。</p>
+<span id="more"></span>
+<p>当你安装了扩展后，会在地址栏的右侧显示出图标</p>
+<p><img src="/asset/images/2016-03-25-icon.png" alt="icon"></p>
+<p>点击图标后，将会出现设置屏蔽词的界面</p>
+<p><img src="/asset/images/2016-03-25-popup.png" alt="popup页面"></p>
+<p>你可以在这个页面中设置你想屏蔽的词语。</p>
+<h2 id="关于Chrome扩展的开发"><a href="#关于Chrome扩展的开发" class="headerlink" title="关于Chrome扩展的开发"></a>关于Chrome扩展的开发</h2><p>关于Chrome扩展开发的内容，可以查看<a target="_blank" rel="noopener" href="https://developer.chrome.com/extensions/getstarted">Google的官方文档</a>或者是<a target="_blank" rel="noopener" href="http://www.ituring.com.cn/minibook/950">这个教程</a>。</p>
+<blockquote>
+<p>一个应用（扩展）其实是压缩在一起的一组文件，包括HTML，CSS，Javascript脚本，图片文件，还有其它任何需要的文件。</p>
+</blockquote>
+<p>开发扩展的时候，必不可少的是一个<code>manifest.json</code>文件，这是一个配置文件，会告诉Chrome你的扩展中包含了哪些内容。<code>manifest.json</code>中包含扩展的名字、版本及各种资源文件（如图标、显示页面等）的链接。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/noiron/ZhihuFilter/blob/master/manifest.json">我的扩展的manifest.json文件</a></p>
+<h3 id="Browser-action-和-page-action"><a href="#Browser-action-和-page-action" class="headerlink" title="Browser_action 和 page_action"></a>Browser_action 和 page_action</h3><p><code>Browser_action</code>和<code>page_action</code>是扩展的两种类型，它们很相似，主要的区别在于<code>browser_action</code>可以应用于所有的页面，而<code>page_action</code>只能在你设定的几个特定网站内使用。我的扩展是专门用于知乎网站的，因此选择了<code>page_action</code>来处理。</p>
+<p>按照Google的文档描述，两者还有一个区别：<code>browser_action</code>的图标显示在地址栏的外部，<code>page_action</code>的图标显示在地址栏内部。但是，在<a target="_blank" rel="noopener" href="https://groups.google.com/a/chromium.org/forum/#!searchin/chromium-extensions/upcoming/chromium-extensions/7As9MKhav5E/dNiZDoSCCQAJ">这里的讨论</a>中，似乎新版本的Chrome浏览器中已经将两者都显示在了地址栏的外侧，不过<code>page_action</code>的图标只有在打开特定的网站时才不会显示为灰色。</p>
+<p>在<code>manifest.json</code>文件中进行如下设置：</p>
+<pre><code>&quot;page_action&quot;: &#123;
+  &quot;default_icon&quot;: &quot;images/icon.png&quot;,
+  &quot;default_title&quot;: &quot;知乎屏蔽扩展&quot;
+&#125;,
+</code></pre><h3 id="background-js"><a href="#background-js" class="headerlink" title="background.js"></a>background.js</h3><blockquote>
+<p>在Manifest中指定background域可以使扩展常驻后台。background可以包含三种属性，分别是<code>scripts</code>、<code>page</code>和<code>persistent</code>。</p>
+</blockquote>
+<p>我在扩展中只用到了<code>scripts</code>：</p>
+<pre><code>&quot;background&quot;: &#123;
+  &quot;scripts&quot;: [&quot;js/jquery-2.2.1.js&quot;,&quot;js/background.js&quot;]
+&#125;,
+</code></pre><p>这样就会自动生成一个包含了列出的脚本文件的后台页面。</p>
+<p>在我的<code>background.js</code>文件中有如下内容：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 当网址改变的时候，判断当前的页面是否是知乎</span></span><br><span class="line"><span class="comment">// 如果是的话，就显示出图标，并设置它的弹出页面</span></span><br><span class="line">chrome.tabs.onUpdated.addListener(<span class="function"><span class="keyword">function</span>(<span class="params">id, info, tab</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (tab.url.toLowerCase().indexOf(<span class="string">&quot;zhihu.com&quot;</span>) &gt; -<span class="number">1</span>)&#123;</span><br><span class="line">        chrome.pageAction.show(id);</span><br><span class="line">        chrome.pageAction.setPopup(&#123;</span><br><span class="line">            <span class="attr">tabId</span>: id,</span><br><span class="line">            <span class="attr">popup</span>: <span class="string">&#x27;popup.html&#x27;</span></span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><code>background.js</code>文件中还有一个用于和<code>content_script</code>进行通信的监听器。</p>
+<blockquote>
+<p>参考资料：<br><a target="_blank" rel="noopener" href="https://developer.chrome.com/extensions/background_pages">Google的Backgorund Pages文档</a><br><a target="_blank" rel="noopener" href="http://www.ituring.com.cn/article/60242">另一个教程</a></p>
+</blockquote>
+<h3 id="Content-Scripts"><a href="#Content-Scripts" class="headerlink" title="Content Scripts"></a>Content Scripts</h3><blockquote>
+<p>Content scripts是在Web页面内运行的javascript脚本。通过使用标准的DOM，它们可以获取浏览器所访问页面的详细信息，并可以修改这些信息。</p>
+</blockquote>
+<p>在<code>manifest.json</code>文件中进行设置：</p>
+<pre><code>&quot;content_scripts&quot;: [
+&#123;
+  &quot;matches&quot;: [&quot;*://*.zhihu.com/*&quot;],
+  &quot;js&quot;: [&quot;js/jquery-2.2.1.js&quot;, &quot;js/content_script.js&quot;]
+&#125;
+</code></pre><p>在打开匹配的网站时，列出的js文件会被注入页面，这样就可以获得浏览器所访问的web页面的详细信息，并可以对页面做出修改。虽然content script和页面共享了DOM结构，但不能访问该页面或其它content script中定义的函数和变量，这样就避免了相同的函数或变量名称的干扰。</p>
+<p>我的扩展的主要功能就是在<code>content_script.js</code>中完成的，在该脚本中通过对页面的DOM进行操作来实现功能。</p>
+<h2 id="扩展功能的实现"><a href="#扩展功能的实现" class="headerlink" title="扩展功能的实现"></a>扩展功能的实现</h2><h3 id="对知乎首页进行分析"><a href="#对知乎首页进行分析" class="headerlink" title="对知乎首页进行分析"></a>对知乎首页进行分析</h3><p>查看一下知乎首页的源代码，所有的答案内容是放在一个<code>id=js-home-feed-list</code>的div中的，结构大致如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--这里省略了很多内容，只是一个大致示意--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;js-home-feed-list&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;feed-item&quot;</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--这里省略一些题目的id，url等信息--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;avatar&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span>  <span class="comment">&lt;!--头像--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;feed-main&quot;</span>&gt;</span>  <span class="comment">&lt;!--除了头像外的其它部分--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;source&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;content&quot;</span>&gt;</span></span><br><span class="line">                <span class="comment">&lt;!--答案内容及按钮等部分--&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;feed-item&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;feed-item&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>而在答案部分中，又分为摘要和完整的答案。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;zm-item-answer-detail&quot;</span>&gt;</span></span><br><span class="line">    …</span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;zm-item-rich-text&quot;</span>&gt;</span>   <span class="comment">&lt;!--内容部分--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;zm-editable-content&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span>   <span class="comment">&lt;!--点击显示全部后，这一部分才显示--&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;<span class="name">textarea</span> <span class="attr">class</span>=<span class="string">&quot;content hidden&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span>   <span class="comment">&lt;!--包括了全部答案内容但不显示--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;zh-summary summary clearfix&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span> <span class="comment">&lt;!--显示摘要--&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>我们可以获取上面的节点内容，来确定是否需要屏蔽这个答案。最简单的实现方法就是查找关键词是否在节点的<code>outerHTML</code>中出现，如果出现了就给<code>.feed-main</code>加上一个名为<code>hidden</code>的class。</p>
+<h3 id="用于替换的内容"><a href="#用于替换的内容" class="headerlink" title="用于替换的内容"></a>用于替换的内容</h3><p>原来的答案被隐藏了之后，需要在这个地方换上点新的内容，我在这里创建了一个div，内部有一个p元素用于显示信息，及一个button用于切换答案的状态。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建用于替换的div</span></span><br><span class="line"><span class="keyword">var</span> $div = $(<span class="string">&#x27;&lt;div class=&quot;block-info&quot;&gt;&lt;/div&gt;&#x27;</span>);</span><br><span class="line">$div.append($(<span class="string">&#x27;&lt;p&gt;这里有一个被屏蔽的答案&lt;span&gt;&lt;/span&gt;&lt;/p&gt;&#x27;</span>));</span><br><span class="line">$div.append($(<span class="string">&#x27;&lt;button class=&quot;block-btn&quot;&gt;手贱一下&lt;/button&gt;&#x27;</span>));</span><br></pre></td></tr></table></figure>
+<p>还需要在按钮上绑定点击事件，p元素内显示的信息也会根据实际进行修改。</p>
+<h3 id="关键词的存储"><a href="#关键词的存储" class="headerlink" title="关键词的存储"></a>关键词的存储</h3><p>在我的扩展中，我是将需要屏蔽的关键词存放在了<code>localStorage</code>中。关键词保存在localStorage中的<code>keywords</code>键下，是一个简单的由逗号分隔开的字符串。</p>
+<blockquote>
+<p>要访问同一个localStorage对象，页面必须来自同一个域名（子域名无效），使用同一种协议，在同一个端口上。</p>
+</blockquote>
+<p>由于content script注入到了知乎页面，而localStorage存放在扩展的域下，要在content script中获得关键词的值，就必须用到页面中的通信。</p>
+<p>Chrome提供了4个有关扩展页面间相互通信的接口，分别是<code>runtime.sendMessage</code>、<code>runtime.onMessage</code>、<code>runtime.connect</code>和<code>runtime.onConnect</code>，<br>这里用到了前两个。</p>
+<p>content_script.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 从扩展的localStorage中获得存储的关键词</span></span><br><span class="line">chrome.runtime.sendMessage(&#123;<span class="attr">method</span>: <span class="string">&quot;getKeywords&quot;</span>&#125;, <span class="function"><span class="keyword">function</span> (<span class="params">response</span>) </span>&#123;</span><br><span class="line">    str = response.keywords;</span><br><span class="line">    keywords = str !== <span class="string">&#x27;&#x27;</span> ? str.split(<span class="string">&#x27;,&#x27;</span>) : [];</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>对应的background.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">chrome.runtime.onMessage.addListener(<span class="function"><span class="keyword">function</span>(<span class="params">request, sender, sendResponse</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (request.method == <span class="string">&quot;getKeywords&quot;</span>)</span><br><span class="line">        sendResponse(&#123;<span class="attr">keywords</span>: <span class="built_in">localStorage</span>[<span class="string">&#x27;keywords&#x27;</span>]&#125;);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        sendResponse(&#123;&#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>这样就可以在content script中使用localStorage的值了。</p>
+<blockquote>
+<p>参考资料：<a target="_blank" rel="noopener" href="http://www.ituring.com.cn/article/60272">扩展页面中的通信</a></p>
+</blockquote>
+<h3 id="检测页面加载了更多内容"><a href="#检测页面加载了更多内容" class="headerlink" title="检测页面加载了更多内容"></a>检测页面加载了更多内容</h3><p>每当当知乎页面加载了更多的答案时，我们需要再进行处理。那么如何检测页面中加载了更多内容，这里需要用到<code>MutationObserver</code>对象。<code>MutationObserver</code>提供了检测页面中的DOM变化的方法。</p>
+<p><code>MutationObserver</code>的使用方法：</p>
+<p>首先，创建一个mutationObserver的实例</p>
+<pre><code>var observer = new MutationObserver(callback)
+</code></pre><p>这里需要一个回调函数作为构造器的参数。</p>
+<p>callback函数接受一个参数，所有被记录到的DOM变化将会组合成一个数组，作为参数传给回调函数进行处理。</p>
+<p>mutationObserver对象有几个方法，这里只用到observe方法。</p>
+<p>observe方法接收两个参数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> observe(</span><br><span class="line">  Node target,</span><br><span class="line">  MutationObserverInit options</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>第一个参数指的是你要观察哪一个节点的DOM变化。第二个参数是一个选项参数，</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> option = &#123;</span><br><span class="line">    <span class="string">&#x27;childList&#x27;</span>: <span class="literal">true</span>,    <span class="comment">// 观察子元素</span></span><br><span class="line">    <span class="string">&#x27;subtree&#x27;</span>: <span class="literal">true</span>,      <span class="comment">// 观察目标节点的后代元素</span></span><br><span class="line">    <span class="string">&#x27;attributes&#x27;</span>: <span class="literal">false</span>   <span class="comment">// 不观察目标节点属性的变化</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这里只设置了三个选项，其余属性可以看<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver#MutationObserverInit">MDN文档</a>。</p>
+<p>观察到的每一个变化都是一个MutationRecord对象，它有许多属性，比如：</p>
+<ul>
+<li>type，记录变化的类型</li>
+<li>addedNodes，由增加的节点组成的NodeList</li>
+<li>removeNodes，由删除的节点组成的NodeList</li>
+</ul>
+<p>因为addedNodes是一个NodeList，所以可以在它上面应用jQuery的$(), <code>$(mutation.addedNodes)</code>。</p>
+<p>其它的属性可以见<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord">MDN文档</a>。</p>
+<p>所有的MutationRecord会被放进一个list中，作为参数传给上面的callback函数。通过对MutationRecord对象的属性进行检测，如果新增的节点里出现了<code>class=feed-main</code>的元素，则代表加载了新的答案，需要再一次运行程序。</p>
+<blockquote>
+<p>参考资料：<br><a target="_blank" rel="noopener" href="https://dev.opera.com/articles/mutation-observers-tutorial/">Getting to Know Mutation Observers</a><br><a target="_blank" rel="noopener" href="http://javascript.ruanyifeng.com/dom/mutationobserver.html">Mutation Observer</a></p>
+</blockquote>
+<h2 id="扩展的使用"><a href="#扩展的使用" class="headerlink" title="扩展的使用"></a>扩展的使用</h2><p>在我的设想中，扩展可以提供一些选项，比如正则表达式的支持，再比如除了首页外，在答案页面是否也需要提供屏蔽功能。这些选项会在之后逐步加入。</p>
+<p>由于Chrome的设置，不能够安装Web Store中没有的程序。而发布扩展需要先付$5，我没有信用卡，也就暂时没有发布扩展。如果想尝试一下扩展的话，可以直接下载<a target="_blank" rel="noopener" href="https://github.com/noiron/ZhihuFilter">Github中的代码</a>到本地。在Chrome浏览器的菜单中选择 More tools -&gt; Extensions，进入扩展页面后，勾选右上角的Developer mode，选择Load unpacked extension，选择扩展文件夹即可。</p>
+<p>欢迎使用后提出建议。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>noiron
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://www.wukai.me/2016/03/25/chrome-extension-zhihufilter/" title="开发一个用于屏蔽知乎网内容的Chrome扩展">http://www.wukai.me/2016/03/25/chrome-extension-zhihufilter/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/javascript/" rel="tag"># javascript</a>
+              <a href="/tags/chrome%E6%89%A9%E5%B1%95/" rel="tag"># chrome扩展</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/03/01/creatures-avoiding-planks/" rel="prev" title="(译)用神经网络实现能够自主避让障碍的生物">
+      <i class="fa fa-chevron-left"></i> (译)用神经网络实现能够自主避让障碍的生物
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/06/19/write-a-simplest-todolist-with-reactjs/" rel="next" title="用 React.js 写一个最简单的 To-do List 应用">
+      用 React.js 写一个最简单的 To-do List 应用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%E5%8A%9F%E8%83%BD"><span class="nav-number">1.</span> <span class="nav-text">扩展功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E4%BA%8EChrome%E6%89%A9%E5%B1%95%E7%9A%84%E5%BC%80%E5%8F%91"><span class="nav-number">2.</span> <span class="nav-text">关于Chrome扩展的开发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Browser-action-%E5%92%8C-page-action"><span class="nav-number">2.1.</span> <span class="nav-text">Browser_action 和 page_action</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#background-js"><span class="nav-number">2.2.</span> <span class="nav-text">background.js</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Content-Scripts"><span class="nav-number">2.3.</span> <span class="nav-text">Content Scripts</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">扩展功能的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E7%9F%A5%E4%B9%8E%E9%A6%96%E9%A1%B5%E8%BF%9B%E8%A1%8C%E5%88%86%E6%9E%90"><span class="nav-number">3.1.</span> <span class="nav-text">对知乎首页进行分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E4%BA%8E%E6%9B%BF%E6%8D%A2%E7%9A%84%E5%86%85%E5%AE%B9"><span class="nav-number">3.2.</span> <span class="nav-text">用于替换的内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E8%AF%8D%E7%9A%84%E5%AD%98%E5%82%A8"><span class="nav-number">3.3.</span> <span class="nav-text">关键词的存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%B5%8B%E9%A1%B5%E9%9D%A2%E5%8A%A0%E8%BD%BD%E4%BA%86%E6%9B%B4%E5%A4%9A%E5%86%85%E5%AE%B9"><span class="nav-number">3.4.</span> <span class="nav-text">检测页面加载了更多内容</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">扩展的使用</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="noiron"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">noiron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/noiron" title="GitHub → https://github.com/noiron" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wukai2048@gmail.com" title="E-Mail → mailto:wukai2048@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-robot"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">noiron</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'neutral',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '684d40de22e47860da99',
+      clientSecret: '5217c37e4a30ba8e3bb6a6658e1023d458139164',
+      repo        : 'noiron.github.io',
+      owner       : 'noiron',
+      admin       : ['noiron'],
+      id          : '1dabd10a9433052cb11c6cc82fb14e59',
+        language: '',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

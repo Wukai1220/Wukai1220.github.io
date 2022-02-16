@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wukai.me","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="最近在试着用Three.js做一个简单的赛车游戏，里面有一个需要解决的问题是如何判断两个物体发生了碰撞，比如赛车是否碰上了障碍物或者获得了奖励物品。 示例我找了一些资料，发现了两个示例程序：第一个示例、第二个示例。 以上两个程序都是用THREE.Raycaster类来解决问题的。 Raycaster类Raycaster应该翻译为“光线投射”，顾名思义，就是投射出去的一束光线。 Raycaster的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何在Three.js中检测两个物体是否了发生碰撞">
+<meta property="og:url" content="http://www.wukai.me/2015/12/28/threejs-collision/index.html">
+<meta property="og:site_name" content="吴锴的博客">
+<meta property="og:description" content="最近在试着用Three.js做一个简单的赛车游戏，里面有一个需要解决的问题是如何判断两个物体发生了碰撞，比如赛车是否碰上了障碍物或者获得了奖励物品。 示例我找了一些资料，发现了两个示例程序：第一个示例、第二个示例。 以上两个程序都是用THREE.Raycaster类来解决问题的。 Raycaster类Raycaster应该翻译为“光线投射”，顾名思义，就是投射出去的一束光线。 Raycaster的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-12-27T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-21T13:55:03.542Z">
+<meta property="article:author" content="noiron">
+<meta property="article:tag" content="javascript">
+<meta property="article:tag" content="three.js">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.wukai.me/2015/12/28/threejs-collision/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>如何在Three.js中检测两个物体是否了发生碰撞 | 吴锴的博客</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111511044-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-111511044-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">吴锴的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Life? Don't talk to me about life!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-demo">
+
+    <a href="/demo/" rel="section"><i class="fa fa-rocket fa-fw"></i>个人项目</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2015/12/28/threejs-collision/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="noiron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="吴锴的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何在Three.js中检测两个物体是否了发生碰撞
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-12-28 00:00:00" itemprop="dateCreated datePublished" datetime="2015-12-28T00:00:00+08:00">2015-12-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近在试着用Three.js做一个简单的赛车游戏，里面有一个需要解决的问题是如何判断两个物体发生了碰撞，比如赛车是否碰上了障碍物或者获得了奖励物品。</p>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>我找了一些资料，发现了两个示例程序：<a target="_blank" rel="noopener" href="https://stemkoski.github.io/Three.js/Collision-Detection.html">第一个示例</a>、<a target="_blank" rel="noopener" href="http://webmaestro.fr/collisions-detection-three-js-raycasting/">第二个示例</a>。</p>
+<p>以上两个程序都是用<code>THREE.Raycaster</code>类来解决问题的。</p>
+<h2 id="Raycaster类"><a href="#Raycaster类" class="headerlink" title="Raycaster类"></a>Raycaster类</h2><p><a target="_blank" rel="noopener" href="http://threejs.org/docs/#Reference/Core/Raycaster">Raycaster</a>应该翻译为“光线投射”，顾名思义，就是投射出去的一束光线。</p>
+<p>Raycaster的构造函数如下</p>
+<pre><code>Raycaster( origin, direction, near, far ) &#123;
+
+origin — 射线的起点向量。
+direction — 射线的方向向量，应该归一化。
+near — 所有返回的结果应该比 near 远。Near不能为负，默认值为0。
+far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认值为无穷大。
+</code></pre><span id="more"></span>
+<h2 id="使用Raycaster进行碰撞检测"><a href="#使用Raycaster进行碰撞检测" class="headerlink" title="使用Raycaster进行碰撞检测"></a>使用Raycaster进行碰撞检测</h2><p>用Raycaster来检测碰撞的原理很简单，我们需要以物体的中心为起点，向各个顶点（vertices）发出射线，然后检查射线是否与其它的物体相交。如果出现了相交的情况，检查最近的一个交点与射线起点间的距离，如果这个距离比射线起点至物体顶点间的距离要小，则说明发生了碰撞。</p>
+<p>这个方法有一个<strong>缺点</strong>，当物体的中心在另一个物体内部时，是不能够检测到碰撞的。而且当两个物体能够互相穿过，且有较大部分重合时，检测效果也不理想。</p>
+<p>还有需要<strong>注意</strong>的一点是：在Three.js中创建物体时，它的顶点（veritces）数目是与它的分段数目相关的，分段越多，顶点数目越多。为了检测过程中的准确度考虑，需要适当增加物体的分段。</p>
+<p>检测光线是否与物体相交使用的是<code>intersectObject</code>或<code>intersectObjects</code>方法:</p>
+<pre><code>.intersectObject ( object, recursive )
+
+object — 检测该物体是否与射线相交。
+recursive — 如果设置，则会检测物体所有的子代。
+</code></pre><p>相交的结果会以一个数组的形式返回，其中的元素依照距离排序，越近的排在越前：</p>
+<pre><code>[ &#123; distance, point, face, faceIndex, indices, object &#125;, ... ]
+</code></pre><p>这样通过对数组中的元素进行处理，就能得出想要的结果。</p>
+<p><code>intersectObjects</code>与<code>intersectObject</code>类似，除了传入的参数是一个数组之外，并无大的差别。</p>
+<h2 id="检测碰撞的代码片段"><a href="#检测碰撞的代码片段" class="headerlink" title="检测碰撞的代码片段"></a>检测碰撞的代码片段</h2><pre><code>/**
+ *  功能：检测 movingCube 是否与数组 collideMeshList 中的元素发生了碰撞
+ * 
+ */
+var originPoint = movingCube.position.clone();
+
+for (var vertexIndex = 0; vertexIndex &lt; movingCube.geometry.vertices.length; vertexIndex++) &#123;
+    // 顶点原始坐标
+    var localVertex = movingCube.geometry.vertices[vertexIndex].clone();
+    // 顶点经过变换后的坐标
+    var globalVertex = localVertex.applyMatrix4(movingCube.matrix);
+    // 获得由中心指向顶点的向量
+    var directionVector = globalVertex.sub(movingCube.position);
+
+    // 将方向向量初始化
+    var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
+    // 检测射线与多个物体的相交情况
+    var collisionResults = ray.intersectObjects(collideMeshList);
+    // 如果返回结果不为空，且交点与射线起点的距离小于物体中心至顶点的距离，则发生了碰撞
+    if (collisionResults.length &gt; 0 &amp;&amp; collisionResults[0].distance &lt; directionVector.length()) &#123;
+        crash = true;   // crash 是一个标记变量
+    &#125;
+&#125;
+</code></pre><p>在Three.js中是使用矩阵来记录3D转换的，每一个Object3D的实例都有一个矩阵，存储了位置position，旋转rotation和伸缩scale。</p>
+<pre><code>var globalVertex = localVertex.applyMatrix4(movingCube.matrix);
+</code></pre><p>这一句代码将物体的本地坐标乘以变换矩阵，得到了这个物体在世界坐标系中的值，处理之后的值才是我们所需要的。</p>
+<h2 id="我的示例代码"><a href="#我的示例代码" class="headerlink" title="我的示例代码"></a>我的示例代码</h2><p><a target="_blank" rel="noopener" href="https://github.com/noiron/race-game-threejs/blob/master/test/cube_collision.html">GitHub示例代码</a></p>
+<p><a target="_blank" rel="noopener" href="http://noiron.github.io/race-game-threejs/test/cube_collision.html">Online Demo</a> 按方向键移动方块，点击鼠标左键并拖动更改视角。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>noiron
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://www.wukai.me/2015/12/28/threejs-collision/" title="如何在Three.js中检测两个物体是否了发生碰撞">http://www.wukai.me/2015/12/28/threejs-collision/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/javascript/" rel="tag"># javascript</a>
+              <a href="/tags/three-js/" rel="tag"># three.js</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/11/15/star-field/" rel="prev" title="Three.js入门——画星空（star field）">
+      <i class="fa fa-chevron-left"></i> Three.js入门——画星空（star field）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/01/01/mouse-drag-effect/" rel="next" title="学习笔记：实现登录界面上的鼠标拖拽效果">
+      学习笔记：实现登录界面上的鼠标拖拽效果 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Raycaster%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">Raycaster类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Raycaster%E8%BF%9B%E8%A1%8C%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B"><span class="nav-number">3.</span> <span class="nav-text">使用Raycaster进行碰撞检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A3%80%E6%B5%8B%E7%A2%B0%E6%92%9E%E7%9A%84%E4%BB%A3%E7%A0%81%E7%89%87%E6%AE%B5"><span class="nav-number">4.</span> <span class="nav-text">检测碰撞的代码片段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%88%91%E7%9A%84%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81"><span class="nav-number">5.</span> <span class="nav-text">我的示例代码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="noiron"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">noiron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/noiron" title="GitHub → https://github.com/noiron" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wukai2048@gmail.com" title="E-Mail → mailto:wukai2048@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-robot"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">noiron</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'neutral',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '684d40de22e47860da99',
+      clientSecret: '5217c37e4a30ba8e3bb6a6658e1023d458139164',
+      repo        : 'noiron.github.io',
+      owner       : 'noiron',
+      admin       : ['noiron'],
+      id          : 'a80c38d24a58f54fdbaf9dd022b71226',
+        language: '',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
