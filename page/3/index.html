@@ -161,6 +161,86 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2016/02/27/text-align-justify-one-line/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="noiron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="吴锴的博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/02/27/text-align-justify-one-line/" class="post-title-link" itemprop="url">实现单行文本的左右对齐</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-02-27 00:00:00" itemprop="dateCreated datePublished" datetime="2016-02-27T00:00:00+08:00">2016-02-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>今天碰到了一个问题，如何让只有一行的文本进行左右对齐。对于英文文本，左右对齐的效果如下所示：</p>
+<p><img src="/asset/images/2016-02-27-justify-text.png" alt="左右对齐的段落"></p>
+<p>上述效果是使用<code>text-align: justify</code>来实现的。可以看到除了最后一行之外，段落的其余部分都是左右对齐的。如果我们将<code>text-align: justify</code>样式直接应用在单行的文本上时，将会像上面段落的最后一行，仅仅是向左对齐。可以看一下下面的例子：</p>
+<p><strong>代码：</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">&quot;justify-para&quot;</span>&gt;</span>这是一行没有左右对齐的文本<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">&quot;text/css&quot;</span>&gt;</span><span class="css"></span></span><br><span class="line"><span class="css"><span class="selector-id">#justify-para</span> &#123;</span></span><br><span class="line"><span class="css">    <span class="attribute">background-color</span>: <span class="number">#ccc</span>;</span></span><br><span class="line"><span class="css">    <span class="attribute">width</span>: <span class="number">400px</span>;</span></span><br><span class="line"><span class="css">    <span class="attribute">text-align</span>: justify;</span></span><br><span class="line"><span class="css">&#125;</span></span><br><span class="line"><span class="css"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>结果：</strong></p>
+<p><img src="/asset/images/2016-02-27-one-line-text1.png" alt="一行没有左右对齐的单行文本"></p>
+<p>对于汉字文本，因为汉字的等宽特点，文本左右对齐的效果就是每个汉字间的间隔相等。为了实现这一效果，需要利用<code>:after</code>伪元素，在文本之后添加一个不可见的元素，如下所示。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-id">#justify-para</span>:after &#123;</span><br><span class="line">  content: <span class="string">&quot;&quot;</span>;</span><br><span class="line">  <span class="attribute">display</span>: inline-block;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>最终效果：</strong></p>
+<p><img src="/asset/images/2016-02-27-one-line-text.png" alt="左右对齐的单行文本"></p>
+<p>这样就实现了单行文本的左右对齐效果。</p>
+<hr>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="http://blog.vjeux.com/2011/css/css-one-line-justify.html">CSS – One Line Justify</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2016/02/26/css-before-list-style/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -866,83 +946,6 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2015/10/22/css3-cube/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="noiron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="吴锴的博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/10/22/css3-cube/" class="post-title-link" itemprop="url">用CSS3绘制一个旋转的立方体</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-10-22 00:00:00" itemprop="dateCreated datePublished" datetime="2015-10-22T00:00:00+08:00">2015-10-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>CSS3提供了一些绘图和动画的功能，我们可以纯粹利用CSS3来画出一个在屏幕上旋转的立方体，<a target="_blank" rel="noopener" href="http://noiron.github.io/css3-cube/">demo戳这里</a>。</p>
-<p>立方体是由六个面组成的，每个面都是一个<code>&lt;div&gt;</code>元素。我们需要对每个面进行位置和方向的调整，才能组合显示成一个立方体。先来看看CSS3中使用的<strong>三维坐标系</strong>。</p>
-<h2 id="三维坐标系"><a href="#三维坐标系" class="headerlink" title="三维坐标系"></a>三维坐标系</h2><p><img src="/asset/images/css-3d-coordinates.jpg" alt="三维坐标示意图"></p>
-<p>这里的坐标系与立体几何中的坐标系有所不同。上图中，由左至右为x轴的正方向，而Y轴则是由上至下，Z轴由屏幕内指向屏幕外。</p>
-<h2 id="transform属性"><a href="#transform属性" class="headerlink" title="transform属性"></a>transform属性</h2><p>transform属性用于向元素应用2D或3D转换，在绘制立方体的过程中用到了<strong>旋转</strong>和<strong>平移</strong>这两种。</p>
-<h3 id="平移"><a href="#平移" class="headerlink" title="平移"></a>平移</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">translateX(<span class="number">200px</span>);    <span class="comment">/*向X轴的正方向平移200像素，即从左向右移动*/</span></span><br><span class="line">translateY(<span class="number">200px</span>);    <span class="comment">/*向Y轴的正方向平移200像素，即从上向下移动*/</span></span><br><span class="line">translateZ(<span class="number">200px</span>);    <span class="comment">/*向Z轴的正方向平移200像素，即从屏幕内向外移动*/</span></span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/10/22/css3-cube/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1014,14 +1017,14 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-count">37</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-count">36</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

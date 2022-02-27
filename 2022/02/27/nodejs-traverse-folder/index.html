@@ -16,21 +16,20 @@
     var CONFIG = {"hostname":"www.wukai.me","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="最近在试着用Three.js做一个简单的赛车游戏，里面有一个需要解决的问题是如何判断两个物体发生了碰撞，比如赛车是否碰上了障碍物或者获得了奖励物品。 示例我找了一些资料，发现了两个示例程序：第一个示例、第二个示例。 以上两个程序都是用THREE.Raycaster类来解决问题的。 Raycaster类Raycaster应该翻译为“光线投射”，顾名思义，就是投射出去的一束光线。 Raycaster的">
+  <meta name="description" content="最近在写一个管理 markdown 文件的工具 knowledge-center，需要读取指定文件夹内所有 markdown 文件。因此需要用 Node.js 来实现遍历一个文件夹内所有文件的功能。 Node.js 中提供了这些有用的 API：  fs.readdir：异步读取文件夹 fs.readdirSync：同步读取文件夹 fs.statSync：同步获取文件属性">
 <meta property="og:type" content="article">
-<meta property="og:title" content="如何在Three.js中检测两个物体是否了发生碰撞">
-<meta property="og:url" content="http://www.wukai.me/2015/12/28/threejs-collision/index.html">
+<meta property="og:title" content="使用 Nodejs 遍历文件夹">
+<meta property="og:url" content="http://www.wukai.me/2022/02/27/nodejs-traverse-folder/index.html">
 <meta property="og:site_name" content="吴锴的博客">
-<meta property="og:description" content="最近在试着用Three.js做一个简单的赛车游戏，里面有一个需要解决的问题是如何判断两个物体发生了碰撞，比如赛车是否碰上了障碍物或者获得了奖励物品。 示例我找了一些资料，发现了两个示例程序：第一个示例、第二个示例。 以上两个程序都是用THREE.Raycaster类来解决问题的。 Raycaster类Raycaster应该翻译为“光线投射”，顾名思义，就是投射出去的一束光线。 Raycaster的">
+<meta property="og:description" content="最近在写一个管理 markdown 文件的工具 knowledge-center，需要读取指定文件夹内所有 markdown 文件。因此需要用 Node.js 来实现遍历一个文件夹内所有文件的功能。 Node.js 中提供了这些有用的 API：  fs.readdir：异步读取文件夹 fs.readdirSync：同步读取文件夹 fs.statSync：同步获取文件属性">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2015-12-27T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-21T13:55:03.542Z">
+<meta property="article:published_time" content="2022-02-27T10:41:52.000Z">
+<meta property="article:modified_time" content="2022-02-27T10:58:32.953Z">
 <meta property="article:author" content="noiron">
-<meta property="article:tag" content="javascript">
-<meta property="article:tag" content="three.js">
+<meta property="article:tag" content="nodejs">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://www.wukai.me/2015/12/28/threejs-collision/">
+<link rel="canonical" href="http://www.wukai.me/2022/02/27/nodejs-traverse-folder/">
 
 
 <script id="page-configurations">
@@ -43,7 +42,7 @@
   };
 </script>
 
-  <title>如何在Three.js中检测两个物体是否了发生碰撞 | 吴锴的博客</title>
+  <title>使用 Nodejs 遍历文件夹 | 吴锴的博客</title>
   
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111511044-1"></script>
     <script>
@@ -168,7 +167,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2015/12/28/threejs-collision/">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2022/02/27/nodejs-traverse-folder/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpg">
@@ -181,7 +180,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          如何在Three.js中检测两个物体是否了发生碰撞
+          使用 Nodejs 遍历文件夹
         </h1>
 
         <div class="post-meta">
@@ -190,16 +189,10 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2015-12-28 00:00:00" itemprop="dateCreated datePublished" datetime="2015-12-28T00:00:00+08:00">2015-12-28</time>
+              <time title="创建时间：2022-02-27 18:41:52 / 修改时间：18:58:32" itemprop="dateCreated datePublished" datetime="2022-02-27T18:41:52+08:00">2022-02-27</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
-              </span>
 
           
             <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
@@ -219,58 +212,45 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>最近在试着用Three.js做一个简单的赛车游戏，里面有一个需要解决的问题是如何判断两个物体发生了碰撞，比如赛车是否碰上了障碍物或者获得了奖励物品。</p>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>我找了一些资料，发现了两个示例程序：<a target="_blank" rel="noopener" href="https://stemkoski.github.io/Three.js/Collision-Detection.html">第一个示例</a>、<a target="_blank" rel="noopener" href="http://webmaestro.fr/collisions-detection-three-js-raycasting/">第二个示例</a>。</p>
-<p>以上两个程序都是用<code>THREE.Raycaster</code>类来解决问题的。</p>
-<h2 id="Raycaster类"><a href="#Raycaster类" class="headerlink" title="Raycaster类"></a>Raycaster类</h2><p><a target="_blank" rel="noopener" href="http://threejs.org/docs/#Reference/Core/Raycaster">Raycaster</a>应该翻译为“光线投射”，顾名思义，就是投射出去的一束光线。</p>
-<p>Raycaster的构造函数如下</p>
-<pre><code>Raycaster( origin, direction, near, far ) &#123;
+        <p>最近在写一个管理 markdown 文件的工具 <a target="_blank" rel="noopener" href="https://github.com/noiron/knowledge-center">knowledge-center</a>，需要读取指定文件夹内所有 markdown 文件。因此需要用 Node.js 来实现遍历一个文件夹内所有文件的功能。</p>
+<p>Node.js 中提供了这些有用的 API：</p>
+<ul>
+<li><code>fs.readdir</code>：异步读取文件夹</li>
+<li><code>fs.readdirSync</code>：同步读取文件夹</li>
+<li><code>fs.statSync</code>：同步获取文件属性</li>
+</ul>
+<span id="more"></span>
+<h2 id="获取的文件列表为数组格式"><a href="#获取的文件列表为数组格式" class="headerlink" title="获取的文件列表为数组格式"></a>获取的文件列表为数组格式</h2><p>对于遍历的结果，我们可以选择按列表或文件树来展示。先从最简单的情况看起，用同步方式处理，返回结果是一个列表。</p>
+<script src="https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=traverseFolderList.js"></script>
 
-origin — 射线的起点向量。
-direction — 射线的方向向量，应该归一化。
-near — 所有返回的结果应该比 near 远。Near不能为负，默认值为0。
-far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认值为无穷大。
-</code></pre><span id="more"></span>
-<h2 id="使用Raycaster进行碰撞检测"><a href="#使用Raycaster进行碰撞检测" class="headerlink" title="使用Raycaster进行碰撞检测"></a>使用Raycaster进行碰撞检测</h2><p>用Raycaster来检测碰撞的原理很简单，我们需要以物体的中心为起点，向各个顶点（vertices）发出射线，然后检查射线是否与其它的物体相交。如果出现了相交的情况，检查最近的一个交点与射线起点间的距离，如果这个距离比射线起点至物体顶点间的距离要小，则说明发生了碰撞。</p>
-<p>这个方法有一个<strong>缺点</strong>，当物体的中心在另一个物体内部时，是不能够检测到碰撞的。而且当两个物体能够互相穿过，且有较大部分重合时，检测效果也不理想。</p>
-<p>还有需要<strong>注意</strong>的一点是：在Three.js中创建物体时，它的顶点（veritces）数目是与它的分段数目相关的，分段越多，顶点数目越多。为了检测过程中的准确度考虑，需要适当增加物体的分段。</p>
-<p>检测光线是否与物体相交使用的是<code>intersectObject</code>或<code>intersectObjects</code>方法:</p>
-<pre><code>.intersectObject ( object, recursive )
+<p>先使用 <code>fs.readdirSync</code> 获取文件列表，然后遍历文件列表，使用 <code>fs.statSync</code> 获取列表中文件的状态，如果是文件，则添加到文件列表中，如果是文件夹，则递归调用 <code>traverseFolderList</code> 函数，直到获取到所有文件。</p>
+<h2 id="获取的文件列表为对象格式"><a href="#获取的文件列表为对象格式" class="headerlink" title="获取的文件列表为对象格式"></a>获取的文件列表为对象格式</h2><p>如果我们想展示文件夹目录结构，那么列表格式的就不太方便了。假设有如下的文件夹结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">./1</span><br><span class="line">├── 2</span><br><span class="line">│   ├── test2.txt</span><br><span class="line">│   └── test2_1.txt</span><br><span class="line">└── 3</span><br><span class="line">    ├── 4</span><br><span class="line">    │   └── test4.txt</span><br><span class="line">    └── test3.txt</span><br></pre></td></tr></table></figure>
+<p>希望获取到的对象结构如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">root</span>: &#123;</span><br><span class="line">    <span class="attr">path</span>: <span class="string">&#x27;./1&#x27;</span>,</span><br><span class="line">    <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>,</span><br><span class="line">    <span class="attr">children</span>: [<span class="string">&#x27;2&#x27;</span>, <span class="string">&#x27;3&#x27;</span>],</span><br><span class="line">    <span class="attr">isRoot</span>: <span class="literal">true</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="number">2</span>: &#123;</span><br><span class="line">    <span class="attr">path</span>: <span class="string">&#x27;2&#x27;</span>,</span><br><span class="line">    <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>,</span><br><span class="line">    <span class="attr">children</span>: [<span class="string">&#x27;2/test2.txt&#x27;</span>, <span class="string">&#x27;2/test2_1.txt&#x27;</span>],</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="number">3</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;3&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>, <span class="attr">children</span>: [<span class="string">&#x27;3/4&#x27;</span>, <span class="string">&#x27;3/test3.txt&#x27;</span>] &#125;,</span><br><span class="line">  <span class="string">&#x27;2/test2.txt&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;2/test2.txt&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;file&#x27;</span> &#125;,</span><br><span class="line">  <span class="string">&#x27;2/test2_1.txt&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;2/test2_1.txt&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;file&#x27;</span> &#125;,</span><br><span class="line">  <span class="string">&#x27;3/4/test4.txt&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;3/4/test4.txt&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>, <span class="attr">children</span>: [] &#125;,</span><br><span class="line">  <span class="string">&#x27;3/4&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;3/4&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>, <span class="attr">children</span>: [<span class="string">&#x27;3/4/test4.txt&#x27;</span>] &#125;,</span><br><span class="line">  <span class="string">&#x27;3/test3.txt&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;3/test3.txt&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;file&#x27;</span> &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这个对象以文件/文件夹相对于根目录的相对路径为 key，每个节点包含了这些属性：</p>
+<ul>
+<li><code>type</code>：用于区分文件或文件夹类型</li>
+<li><code>path</code>：相对路径</li>
+<li><code>children</code>：如果是文件夹类型，则其中是子文件的相对路径</li>
+</ul>
+<script src="https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=traverseFolderObj.js"></script>
 
-object — 检测该物体是否与射线相交。
-recursive — 如果设置，则会检测物体所有的子代。
-</code></pre><p>相交的结果会以一个数组的形式返回，其中的元素依照距离排序，越近的排在越前：</p>
-<pre><code>[ &#123; distance, point, face, faceIndex, indices, object &#125;, ... ]
-</code></pre><p>这样通过对数组中的元素进行处理，就能得出想要的结果。</p>
-<p><code>intersectObjects</code>与<code>intersectObject</code>类似，除了传入的参数是一个数组之外，并无大的差别。</p>
-<h2 id="检测碰撞的代码片段"><a href="#检测碰撞的代码片段" class="headerlink" title="检测碰撞的代码片段"></a>检测碰撞的代码片段</h2><pre><code>/**
- *  功能：检测 movingCube 是否与数组 collideMeshList 中的元素发生了碰撞
- * 
- */
-var originPoint = movingCube.position.clone();
+<h2 id="异步方式"><a href="#异步方式" class="headerlink" title="异步方式"></a>异步方式</h2><p>在上面的实现中，都是使用了同步的方式来处理，即 <code>fs.readdirSync</code> 方法，可以使用异步方式来处理吗？</p>
+<p>可以选择 <code>fs.readdir</code> 来异步读取文件夹, 但是回调函数的调用方式不太方便。在 Node 10+ 中可以从 <code>fs.promises</code> 中引入 <code>readdir</code> 方法，这样就可以使用方便的 <code>async/await</code> 语法来进行异步处理，同时避免了  的回调函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> &#123; readdir &#125; = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>).promises; </span><br></pre></td></tr></table></figure>
+<p>将上面的 <code>traverseFolderList</code> 方法重写为异步格式：</p>
+<script src="https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=asyncTraverseFolderList.js"></script>
 
-for (var vertexIndex = 0; vertexIndex &lt; movingCube.geometry.vertices.length; vertexIndex++) &#123;
-    // 顶点原始坐标
-    var localVertex = movingCube.geometry.vertices[vertexIndex].clone();
-    // 顶点经过变换后的坐标
-    var globalVertex = localVertex.applyMatrix4(movingCube.matrix);
-    // 获得由中心指向顶点的向量
-    var directionVector = globalVertex.sub(movingCube.position);
+<h2 id="比较同步和异步两种方案"><a href="#比较同步和异步两种方案" class="headerlink" title="比较同步和异步两种方案"></a>比较同步和异步两种方案</h2><p><code>traverseFolderList</code> 和 <code>asyncTraverseFolderList</code> 返回的结果都是列表格式，我们可以写一个测试脚本来比较下二者的运行时间：</p>
+<script src="https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=index.js"></script>
 
-    // 将方向向量初始化
-    var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
-    // 检测射线与多个物体的相交情况
-    var collisionResults = ray.intersectObjects(collideMeshList);
-    // 如果返回结果不为空，且交点与射线起点的距离小于物体中心至顶点的距离，则发生了碰撞
-    if (collisionResults.length &gt; 0 &amp;&amp; collisionResults[0].distance &lt; directionVector.length()) &#123;
-        crash = true;   // crash 是一个标记变量
-    &#125;
-&#125;
-</code></pre><p>在Three.js中是使用矩阵来记录3D转换的，每一个Object3D的实例都有一个矩阵，存储了位置position，旋转rotation和伸缩scale。</p>
-<pre><code>var globalVertex = localVertex.applyMatrix4(movingCube.matrix);
-</code></pre><p>这一句代码将物体的本地坐标乘以变换矩阵，得到了这个物体在世界坐标系中的值，处理之后的值才是我们所需要的。</p>
-<h2 id="我的示例代码"><a href="#我的示例代码" class="headerlink" title="我的示例代码"></a>我的示例代码</h2><p><a target="_blank" rel="noopener" href="https://github.com/noiron/race-game-threejs/blob/master/test/cube_collision.html">GitHub示例代码</a></p>
-<p><a target="_blank" rel="noopener" href="http://noiron.github.io/race-game-threejs/test/cube_collision.html">Online Demo</a> 按方向键移动方块，点击鼠标左键并拖动更改视角。</p>
+<p>分别用两个函数遍历了同一个文件夹十次后，统计结果如下，异步方式比同步方式快了约18%。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">同步 - 平均耗时：1217.1ms</span><br><span class="line">异步 - 平均耗时：1025.7ms</span><br></pre></td></tr></table></figure>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/45130990">https://stackoverflow.com/a/45130990</a></p>
+<p>fs.promises 和 promisify api<br><a target="_blank" rel="noopener" href="https://nodejs.org/dist/latest-v10.x/docs/api/fs.html#fs_fs_promises_api">https://nodejs.org/dist/latest-v10.x/docs/api/fs.html#fs_fs_promises_api</a><br><a target="_blank" rel="noopener" href="https://javascript.info/promisify">https://javascript.info/promisify</a></p>
+</blockquote>
 
     </div>
 
@@ -286,7 +266,7 @@ for (var vertexIndex = 0; vertexIndex &lt; movingCube.geometry.vertices.length; 
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://www.wukai.me/2015/12/28/threejs-collision/" title="如何在Three.js中检测两个物体是否了发生碰撞">http://www.wukai.me/2015/12/28/threejs-collision/</a>
+    <a href="http://www.wukai.me/2022/02/27/nodejs-traverse-folder/" title="使用 Nodejs 遍历文件夹">http://www.wukai.me/2022/02/27/nodejs-traverse-folder/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -316,8 +296,7 @@ for (var vertexIndex = 0; vertexIndex &lt; movingCube.geometry.vertices.length; 
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/javascript/" rel="tag"># javascript</a>
-              <a href="/tags/three-js/" rel="tag"># three.js</a>
+              <a href="/tags/nodejs/" rel="tag"># nodejs</a>
           </div>
 
         
@@ -326,13 +305,10 @@ for (var vertexIndex = 0; vertexIndex &lt; movingCube.geometry.vertices.length; 
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2015/11/15/star-field/" rel="prev" title="Three.js入门——画星空（star field）">
-      <i class="fa fa-chevron-left"></i> Three.js入门——画星空（star field）
+    <a href="/2022/02/16/sudoku/" rel="prev" title="如何解数独">
+      <i class="fa fa-chevron-left"></i> 如何解数独
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2016/01/01/mouse-drag-effect/" rel="next" title="学习笔记：实现登录界面上的鼠标拖拽效果">
-      学习笔记：实现登录界面上的鼠标拖拽效果 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -392,7 +368,7 @@ for (var vertexIndex = 0; vertexIndex &lt; movingCube.geometry.vertices.length; 
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Raycaster%E7%B1%BB"><span class="nav-number">2.</span> <span class="nav-text">Raycaster类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Raycaster%E8%BF%9B%E8%A1%8C%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B"><span class="nav-number">3.</span> <span class="nav-text">使用Raycaster进行碰撞检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A3%80%E6%B5%8B%E7%A2%B0%E6%92%9E%E7%9A%84%E4%BB%A3%E7%A0%81%E7%89%87%E6%AE%B5"><span class="nav-number">4.</span> <span class="nav-text">检测碰撞的代码片段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%88%91%E7%9A%84%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81"><span class="nav-number">5.</span> <span class="nav-text">我的示例代码</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E7%9A%84%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8%E4%B8%BA%E6%95%B0%E7%BB%84%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">获取的文件列表为数组格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E7%9A%84%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8%E4%B8%BA%E5%AF%B9%E8%B1%A1%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">获取的文件列表为对象格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E6%96%B9%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">异步方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AF%94%E8%BE%83%E5%90%8C%E6%AD%A5%E5%92%8C%E5%BC%82%E6%AD%A5%E4%B8%A4%E7%A7%8D%E6%96%B9%E6%A1%88"><span class="nav-number">4.</span> <span class="nav-text">比较同步和异步两种方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -554,7 +530,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'noiron.github.io',
       owner       : 'noiron',
       admin       : ['noiron'],
-      id          : 'a80c38d24a58f54fdbaf9dd022b71226',
+      id          : 'f40b17aa26f4a2f5659c7f90c9c808f6',
         language: '',
       distractionFreeMode: false
     });
