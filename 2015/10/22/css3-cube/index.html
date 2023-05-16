@@ -16,12 +16,12 @@
     var CONFIG = {"hostname":"www.wukai.me","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="CSS3提供了一些绘图和动画的功能，我们可以纯粹利用CSS3来画出一个在屏幕上旋转的立方体，demo戳这里。 立方体是由六个面组成的，每个面都是一个&lt;div&gt;元素。我们需要对每个面进行位置和方向的调整，才能组合显示成一个立方体。先来看看CSS3中使用的三维坐标系。 三维坐标系 这里的坐标系与立体几何中的坐标系有所不同。上图中，由左至右为x轴的正方向，而Y轴则是由上至下，Z轴由屏幕内指向">
+  <meta name="description" content="CSS3提供了一些绘图和动画的功能，我们可以纯粹利用CSS3来画出一个在屏幕上旋转的立方体，demo戳这里。 立方体是由六个面组成的，每个面都是一个&lt;div&gt;元素。我们需要对每个面进行位置和方向的调整，才能组合显示成一个立方体。先来看看CSS3中使用的三维坐标系。 三维坐标系   三维坐标示意图  这里的坐标系与立体几何中的坐标系有所不同。上图中，由左至右为x轴的正方向，而Y轴则是由上">
 <meta property="og:type" content="article">
 <meta property="og:title" content="用CSS3绘制一个旋转的立方体">
 <meta property="og:url" content="http://www.wukai.me/2015/10/22/css3-cube/index.html">
 <meta property="og:site_name" content="吴锴的博客">
-<meta property="og:description" content="CSS3提供了一些绘图和动画的功能，我们可以纯粹利用CSS3来画出一个在屏幕上旋转的立方体，demo戳这里。 立方体是由六个面组成的，每个面都是一个&lt;div&gt;元素。我们需要对每个面进行位置和方向的调整，才能组合显示成一个立方体。先来看看CSS3中使用的三维坐标系。 三维坐标系 这里的坐标系与立体几何中的坐标系有所不同。上图中，由左至右为x轴的正方向，而Y轴则是由上至下，Z轴由屏幕内指向">
+<meta property="og:description" content="CSS3提供了一些绘图和动画的功能，我们可以纯粹利用CSS3来画出一个在屏幕上旋转的立方体，demo戳这里。 立方体是由六个面组成的，每个面都是一个&lt;div&gt;元素。我们需要对每个面进行位置和方向的调整，才能组合显示成一个立方体。先来看看CSS3中使用的三维坐标系。 三维坐标系   三维坐标示意图  这里的坐标系与立体几何中的坐标系有所不同。上图中，由左至右为x轴的正方向，而Y轴则是由上">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://www.wukai.me/asset/images/css-3d-coordinates.jpg">
 <meta property="og:image" content="http://www.wukai.me/asset/images/css_perspective.png">
@@ -222,34 +222,56 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>CSS3提供了一些绘图和动画的功能，我们可以纯粹利用CSS3来画出一个在屏幕上旋转的立方体，<a target="_blank" rel="noopener" href="http://noiron.github.io/css3-cube/">demo戳这里</a>。</p>
+        <p>CSS3提供了一些绘图和动画的功能，我们可以纯粹利用CSS3来画出一个在屏幕上旋转的立方体，<a
+target="_blank" rel="noopener" href="http://noiron.github.io/css3-cube/">demo戳这里</a>。</p>
 <p>立方体是由六个面组成的，每个面都是一个<code>&lt;div&gt;</code>元素。我们需要对每个面进行位置和方向的调整，才能组合显示成一个立方体。先来看看CSS3中使用的<strong>三维坐标系</strong>。</p>
-<h2 id="三维坐标系"><a href="#三维坐标系" class="headerlink" title="三维坐标系"></a>三维坐标系</h2><p><img src="/asset/images/css-3d-coordinates.jpg" alt="三维坐标示意图"></p>
+<h2 id="三维坐标系">三维坐标系</h2>
+<figure>
+<img src="/asset/images/css-3d-coordinates.jpg" alt="三维坐标示意图" />
+<figcaption aria-hidden="true">三维坐标示意图</figcaption>
+</figure>
 <p>这里的坐标系与立体几何中的坐标系有所不同。上图中，由左至右为x轴的正方向，而Y轴则是由上至下，Z轴由屏幕内指向屏幕外。</p>
-<h2 id="transform属性"><a href="#transform属性" class="headerlink" title="transform属性"></a>transform属性</h2><p>transform属性用于向元素应用2D或3D转换，在绘制立方体的过程中用到了<strong>旋转</strong>和<strong>平移</strong>这两种。</p>
-<h3 id="平移"><a href="#平移" class="headerlink" title="平移"></a>平移</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">translateX(<span class="number">200px</span>);    <span class="comment">/*向X轴的正方向平移200像素，即从左向右移动*/</span></span><br><span class="line">translateY(<span class="number">200px</span>);    <span class="comment">/*向Y轴的正方向平移200像素，即从上向下移动*/</span></span><br><span class="line">translateZ(<span class="number">200px</span>);    <span class="comment">/*向Z轴的正方向平移200像素，即从屏幕内向外移动*/</span></span><br></pre></td></tr></table></figure>
+<h2 id="transform属性">transform属性</h2>
+<p>transform属性用于向元素应用2D或3D转换，在绘制立方体的过程中用到了<strong>旋转</strong>和<strong>平移</strong>这两种。</p>
+<h3 id="平移">平移</h3>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">translateX(<span class="number">200px</span>);    <span class="comment">/*向X轴的正方向平移200像素，即从左向右移动*/</span></span><br><span class="line">translateY(<span class="number">200px</span>);    <span class="comment">/*向Y轴的正方向平移200像素，即从上向下移动*/</span></span><br><span class="line">translateZ(<span class="number">200px</span>);    <span class="comment">/*向Z轴的正方向平移200像素，即从屏幕内向外移动*/</span></span><br></pre></td></tr></table></figure>
 <span id="more"></span>
 <p>当平移的数值为负值时，表示向反方向移动。</p>
-<h3 id="旋转"><a href="#旋转" class="headerlink" title="旋转"></a>旋转</h3><p>旋转也分为绕三个轴的旋转。如何区分旋转时的顺时针和逆时针呢，这里使用的是<strong>左手法则</strong>。以绕X轴旋转为例，左手握住X轴，大拇指的方向指向X轴的正方向右侧，这样便是在绕X轴顺时针旋转。反之，拇指指向左侧时，是逆时针旋转。</p>
+<h3 id="旋转">旋转</h3>
+<p>旋转也分为绕三个轴的旋转。如何区分旋转时的顺时针和逆时针呢，这里使用的是<strong>左手法则</strong>。以绕X轴旋转为例，左手握住X轴，大拇指的方向指向X轴的正方向右侧，这样便是在绕X轴顺时针旋转。反之，拇指指向左侧时，是逆时针旋转。</p>
 <figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">rotateX(<span class="number">45deg</span>);    <span class="comment">/*绕X轴顺时针旋转45度*/</span></span><br><span class="line">rotateY(<span class="number">45deg</span>);    <span class="comment">/*绕Y轴顺时针旋转45度*/</span></span><br><span class="line">rotateZ(<span class="number">45deg</span>);    <span class="comment">/*绕Z轴顺时针旋转45度*/</span></span><br></pre></td></tr></table></figure>
 <p>当上述数值为负值时，表示逆时针旋转。</p>
-<h2 id="由平移和旋转组合成立方体"><a href="#由平移和旋转组合成立方体" class="headerlink" title="由平移和旋转组合成立方体"></a>由平移和旋转组合成立方体</h2><p>现在我们有的是六个平面，需要通过平移和旋转这两个操作将它们移至合适的位置，可以对它们进行如下的操作。</p>
+<h2 id="由平移和旋转组合成立方体">由平移和旋转组合成立方体</h2>
+<p>现在我们有的是六个平面，需要通过平移和旋转这两个操作将它们移至合适的位置，可以对它们进行如下的操作。</p>
 <figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">div</span><span class="selector-id">#front</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">translateZ</span>(<span class="number">200px</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">div</span><span class="selector-id">#back</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">translateZ</span>(-<span class="number">200px</span>) <span class="built_in">rotateY</span>(<span class="number">180deg</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">div</span><span class="selector-id">#left</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">rotateY</span>(-<span class="number">90deg</span>) <span class="built_in">translateZ</span>(<span class="number">200px</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">div</span><span class="selector-id">#right</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">rotateY</span>(<span class="number">90deg</span>) <span class="built_in">translateZ</span>(<span class="number">200px</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">div</span><span class="selector-id">#top</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">rotateX</span>(<span class="number">90deg</span>) <span class="built_in">translateZ</span>(<span class="number">200px</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">div</span><span class="selector-id">#bottom</span> &#123;</span><br><span class="line">    <span class="attribute">transform</span>: <span class="built_in">rotateX</span>(-<span class="number">90deg</span>) <span class="built_in">translateZ</span>(<span class="number">200px</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>对于左侧平面，先需要绕Y轴逆时针旋转90度，再向左平移200像素。这里有一个需要注意的地方，当向左侧平移的时候，不是translateX(-200px)，而是translateZ(200px)。</p>
 <p>为什么呢？在我们平常的认知中，在旋转过程中，只有元素在旋转，而坐标系是保持不变的。但是在这里，元素和我们的坐标系是绑定在一起旋转的。当元素绕Y轴逆时针旋转90度时，整个坐标系同样旋转了90度，因而Z轴的正方向就由指向屏幕外变成了指向左侧，所以向左侧平移成了translateZ(200px)。其余几个面的移动同样需要注意这一点。</p>
-<h2 id="perspective和perspective-origin"><a href="#perspective和perspective-origin" class="headerlink" title="perspective和perspective-origin"></a>perspective和perspective-origin</h2><p>perspective代表的是perspective depth，指的是观察者的眼睛至屏幕的垂直距离，即下图中的d。</p>
-<p><img src="/asset/images/css_perspective.png" alt="perspective示意图"></p>
+<h2
+id="perspective和perspective-origin">perspective和perspective-origin</h2>
+<p>perspective代表的是perspective
+depth，指的是观察者的眼睛至屏幕的垂直距离，即下图中的d。</p>
+<figure>
+<img src="/asset/images/css_perspective.png" alt="perspective示意图" />
+<figcaption aria-hidden="true">perspective示意图</figcaption>
+</figure>
 <p>而图中的Z代表的是目标在Z轴上的偏移量。Z为正值时，目标变近，在屏幕上的投影变大。</p>
-<p>perspective-origin表示的是视点位置，它是一个二维坐标，原点在左上角，它的单位可以是像素值，也可以是百分比，默认值是{x:50%, y:50%}，也就是正中心。</p>
-<p><img src="/asset/images/css_perspective-origin.jpg" alt="视点示意图"></p>
+<p>perspective-origin表示的是视点位置，它是一个二维坐标，原点在左上角，它的单位可以是像素值，也可以是百分比，默认值是{x:50%,
+y:50%}，也就是正中心。</p>
+<figure>
+<img src="/asset/images/css_perspective-origin.jpg" alt="视点示意图" />
+<figcaption aria-hidden="true">视点示意图</figcaption>
+</figure>
 <figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-id">#container</span> &#123;</span><br><span class="line">    <span class="attribute">perspective</span>: <span class="number">1000px</span>;</span><br><span class="line">    <span class="attribute">perspective-origin</span>: <span class="number">50%</span> <span class="number">50%</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="加入一点动画效果"><a href="#加入一点动画效果" class="headerlink" title="加入一点动画效果"></a>加入一点动画效果</h2><p>为了让我们的立方体旋转起来，需要用@keyframes规则加入一点简单的动画效果。</p>
+<h2 id="加入一点动画效果">加入一点动画效果</h2>
+<p>为了让我们的立方体旋转起来，需要用@keyframes规则加入一点简单的动画效果。</p>
 <figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*同时绕X和Y轴旋转，从0度至360度*/</span></span><br><span class="line"><span class="keyword">@keyframes</span> spin &#123;</span><br><span class="line">    <span class="selector-tag">from</span> &#123;</span><br><span class="line">        <span class="attribute">transform</span>: <span class="built_in">rotateX</span>(<span class="number">0deg</span>) <span class="built_in">rotateY</span>(<span class="number">0deg</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="selector-tag">to</span> &#123;</span><br><span class="line">        <span class="attribute">transform</span>: <span class="built_in">rotateX</span>(<span class="number">360deg</span>) <span class="built_in">rotateY</span>(<span class="number">360deg</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*绑定到上面的spin动画上，循环运动，每次用时5s*/</span></span><br><span class="line"><span class="selector-id">#cube</span> &#123;</span><br><span class="line">    <span class="attribute">animation</span>: spin <span class="number">5s</span> infinite linear;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>最终我们就用CSS3实现了一个不停旋转的立方体。</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/noiron/css3-cube">代码地址：css-cube</a></p>
+<p><a
+target="_blank" rel="noopener" href="https://github.com/noiron/css3-cube">代码地址：css-cube</a></p>
 <p>参考网址：</p>
 <blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.maintao.com/2015/d6-in-css/">纯CSS制作3D骰子</a></p>
+<p><a
+target="_blank" rel="noopener" href="http://www.maintao.com/2015/d6-in-css/">纯CSS制作3D骰子</a></p>
 </blockquote>
 
     </div>
@@ -407,14 +429,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">38</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -537,6 +559,8 @@ if (document.querySelectorAll('pre.mermaid').length) {
 }
 </script>
 
+
+  
 
   
 

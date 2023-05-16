@@ -161,6 +161,89 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2018/03/04/minimax-alpha-beta-pruning-and-tic-tac-toe/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="noiron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="吴锴的博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2018/03/04/minimax-alpha-beta-pruning-and-tic-tac-toe/" class="post-title-link" itemprop="url">Minimax 和 Alpha-beta 剪枝算法简介，及以此实现的井字棋游戏（Tic-tac-toe）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-04 00:00:00" itemprop="dateCreated datePublished" datetime="2018-03-04T00:00:00+08:00">2018-03-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>前段时间用 React 写了个<a
+target="_blank" rel="noopener" href="https://github.com/noiron/react-2048">2048
+游戏</a>来练练手，准备用来回顾下 React
+相关的各种技术，以及试验一下新技术。在写这个2048的过程中，我考虑是否可以在其中加入一个
+AI 算法来自动进行游戏，于是我找到了这篇文章：<a
+target="_blank" rel="noopener" href="http://blog.codinglabs.org/articles/2048-ai-analysis.html">2048-AI程序算法分析</a>，文中介绍了
+minimax 算法和 alpha-beta
+剪枝算法。于是我决定先学习下这两种算法，并以此写了这个 tic-tac-toe
+游戏：<a
+target="_blank" rel="noopener" href="https://tic-tac-toe-js-app.herokuapp.com/">tic-tac-toe-js</a>（<a
+target="_blank" rel="noopener" href="https://github.com/noiron/tic-tac-toe-js">代码见此处</a>）。本文将说明如何用
+JavaScript 来简单地实现算法，并将其运用到 tic-tac-toe 游戏中。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2018/03/04/minimax-alpha-beta-pruning-and-tic-tac-toe/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2018/01/01/2017-annual-summary/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -278,7 +361,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>前段时间在寻找一些关于富文本编辑器的资料，然后发现了这个名为 <a target="_blank" rel="noopener" href="https://github.com/jaredreich/pell">Pell</a> 的项目，它是一个所见即所得（WYSIWYG）的文本编辑器，虽然它的功能很简单，但是令人吃惊的是它只有 1kb 大小。而项目最核心的文件 <a target="_blank" rel="noopener" href="https://github.com/jaredreich/pell/blob/master/src/pell.js">pell.js</a> 只有130行，即使加上其它部分，总的 js 数量也不到200行。这引起了我的兴趣，决定看看它的源码是如何做到这一点的。</p>
+          <p>前段时间在寻找一些关于富文本编辑器的资料，然后发现了这个名为 <a
+target="_blank" rel="noopener" href="https://github.com/jaredreich/pell">Pell</a>
+的项目，它是一个所见即所得（WYSIWYG）的文本编辑器，虽然它的功能很简单，但是令人吃惊的是它只有
+1kb 大小。而项目最核心的文件 <a
+target="_blank" rel="noopener" href="https://github.com/jaredreich/pell/blob/master/src/pell.js">pell.js</a>
+只有130行，即使加上其它部分，总的 js
+数量也不到200行。这引起了我的兴趣，决定看看它的源码是如何做到这一点的。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2017/12/31/rich-text-editor-in-less-than-200-lines-javascript/#more" rel="contents">
@@ -351,9 +440,16 @@
 
       
           <blockquote>
-<p>Any application that <strong>can</strong> be written in JavaScript, <strong>will</strong> eventually be written in JavaScript.<br>– Atwood’s Law</p>
+<p>Any application that <strong>can</strong> be written in JavaScript,
+<strong>will</strong> eventually be written in JavaScript. -- Atwood's
+Law</p>
 </blockquote>
-<p>本文来源于我在看了 Milo Yip 在知乎专栏里的这篇文章：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/30745861">《用 C 语言画光（一）：基础》</a>之后的一个想法，能不能将原文中 C 语言版本程序改成 JavaScript 版本的。动手之后发现出乎意料的顺利，我只需要把 C 语言中变量的类型通通去掉就可以了😀，Amazing！</p>
+<p>本文来源于我在看了 Milo Yip 在知乎专栏里的这篇文章：<a
+target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/30745861">《用 C
+语言画光（一）：基础》</a>之后的一个想法，能不能将原文中 C
+语言版本程序改成 JavaScript
+版本的。动手之后发现出乎意料的顺利，我只需要把 C
+语言中变量的类型通通去掉就可以了😀，Amazing！</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2017/12/10/light-2d-javascript/#more" rel="contents">
@@ -427,11 +523,19 @@
       
           <p>如果开发一个塔防游戏，很自然的会遇上这么两个名字很像的问题：</p>
 <ul>
-<li><strong>Path-finding</strong>: 如果知道起点和终点，如何在其间找到一条路径</li>
-<li><strong>Path-following</strong>: 已知从起点到终点的路径，物体如何才能沿着它行进</li>
+<li><strong>Path-finding</strong>:
+如果知道起点和终点，如何在其间找到一条路径</li>
+<li><strong>Path-following</strong>:
+已知从起点到终点的路径，物体如何才能沿着它行进</li>
 </ul>
-<p>本文将要讨论的是第二个问题 <strong>path following</strong>，给定一条路径，看物体如何沿着它从起点运行至终点。为了方便描述，接下来的内容中，用单词 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Boids">Boid</a> 来表示行进的物体或塔防中的敌人。</p>
-<p>接下来会用一种简单的方法来解决这一问题，最终完成的代码库可见 GitHub: <a target="_blank" rel="noopener" href="https://github.com/noiron/boid-path-following">boid-path-following</a>，repo 的多个分支对应了文中的不同步骤。</p>
+<p>本文将要讨论的是第二个问题 <strong>path
+following</strong>，给定一条路径，看物体如何沿着它从起点运行至终点。为了方便描述，接下来的内容中，用单词
+<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Boids">Boid</a>
+来表示行进的物体或塔防中的敌人。</p>
+<p>接下来会用一种简单的方法来解决这一问题，最终完成的代码库可见 GitHub:
+<a
+target="_blank" rel="noopener" href="https://github.com/noiron/boid-path-following">boid-path-following</a>，repo
+的多个分支对应了文中的不同步骤。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2017/12/09/boid-path-following/#more" rel="contents">
@@ -503,8 +607,18 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>React Router v4 推出已有六个月了，网络上因版本升级带来的哀嚎仿佛就在半年前。我在使用这个版本的 React Router 时，也遇到了一些问题，比如这里所说的代码分割，所以写了这篇博客作为总结，希望能对他人有所帮助。</p>
-<h2 id="什么是代码分割（code-splitting）"><a href="#什么是代码分割（code-splitting）" class="headerlink" title="什么是代码分割（code splitting）"></a>什么是代码分割（code splitting）</h2><p>在用户浏览我们的网站时，一种方案是一次性地将所有的 JavaScript 代码都下载下来，可想而知，代码体积会很可观，同时这些代码中的一部分可能是用户此时并不需要的。另一种方案是按需加载，将 JavaScript 代码分成多个块（chunk），用户只需下载当前浏览所需的代码即可，用户进入到其它页面或需要渲染其它部分时，才加载更多的代码。这后一种方案中用到的就是所谓的<strong>代码分割（code splitting）</strong>了。</p>
+          <h2 id="背景介绍">背景介绍</h2>
+<p>React Router v4
+推出已有六个月了，网络上因版本升级带来的哀嚎仿佛就在半年前。我在使用这个版本的
+React Router
+时，也遇到了一些问题，比如这里所说的代码分割，所以写了这篇博客作为总结，希望能对他人有所帮助。</p>
+<h2 id="什么是代码分割code-splitting">什么是代码分割（code
+splitting）</h2>
+<p>在用户浏览我们的网站时，一种方案是一次性地将所有的 JavaScript
+代码都下载下来，可想而知，代码体积会很可观，同时这些代码中的一部分可能是用户此时并不需要的。另一种方案是按需加载，将
+JavaScript
+代码分成多个块（chunk），用户只需下载当前浏览所需的代码即可，用户进入到其它页面或需要渲染其它部分时，才加载更多的代码。这后一种方案中用到的就是所谓的<strong>代码分割（code
+splitting）</strong>了。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2017/09/25/react-router-v4-code-splitting/#more" rel="contents">
@@ -576,7 +690,9 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="项目背景介绍"><a href="#项目背景介绍" class="headerlink" title="项目背景介绍"></a>项目背景介绍</h2><p>最近在写的项目中存在着社交模块，需要实现这样的一个功能：当发生了用户被点赞、评论、关注等操作时，需要由服务器向用户实时地推送一条消息。最终完成的项目地址为：<a target="_blank" rel="noopener" href="https://github.com/noiron/socket-message-push">socket-message-push</a>，这里将介绍一下实现的思路及部分代码。</p>
+          <h2 id="项目背景介绍">项目背景介绍</h2>
+<p>最近在写的项目中存在着社交模块，需要实现这样的一个功能：当发生了用户被点赞、评论、关注等操作时，需要由服务器向用户实时地推送一条消息。最终完成的项目地址为：<a
+target="_blank" rel="noopener" href="https://github.com/noiron/socket-message-push">socket-message-push</a>，这里将介绍一下实现的思路及部分代码。</p>
 <p>项目的流程中存在着这样的几个对象：</p>
 <ul>
 <li>用 Java 实现的后端服务器</li>
@@ -584,12 +700,17 @@
 <li>用户进行操作的客户端</li>
 </ul>
 <p>事件处理的流程如下：</p>
-<ol>
-<li>用户进行点赞操作时，后端服务器会进行处理，并向 Node.js 消息推送服务器发送一条消息</li>
-<li>Node.js 消息推送服务器接收到后端发送的消息后，处理数据，并确定向哪个用户进行推送</li>
-<li>用户的客户端接收到由 Node.js 服务器推送来的消息后，即可进行通知的显示。</li>
+<ol type="1">
+<li>用户进行点赞操作时，后端服务器会进行处理，并向 Node.js
+消息推送服务器发送一条消息</li>
+<li>Node.js
+消息推送服务器接收到后端发送的消息后，处理数据，并确定向哪个用户进行推送</li>
+<li>用户的客户端接收到由 Node.js
+服务器推送来的消息后，即可进行通知的显示。</li>
 </ol>
-<p>上面的流程中，Java 后端服务器是如何实现的不在此篇文章的讨论范围内，本文将主要介绍如何使用 Node.js 来实现这个消息推送服务器。</p>
+<p>上面的流程中，Java
+后端服务器是如何实现的不在此篇文章的讨论范围内，本文将主要介绍如何使用
+Node.js 来实现这个消息推送服务器。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2017/08/27/push-message-with-socketio/#more" rel="contents">
@@ -661,8 +782,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>写这篇博客的起因是我看了Medium上的这篇文章：<a target="_blank" rel="noopener" href="https://blog.prototypr.io/how-i-started-drawing-css-images-3fd878675c89">How I started drawing CSS Images</a>，然后哇哦😦，同样是前端开发，这区别怎么这么大呢？这位作者和我完全点了不同的技能点啊！</p>
-<p>看了几个她在codepen上的作品，比如这个<a target="_blank" rel="noopener" href="http://codepen.io/sashatran/pen/VmwmJO">皮卡丘</a>，发现用到的技术也并不多，于是我也想试试。</p>
+          <p>写这篇博客的起因是我看了Medium上的这篇文章：<a
+target="_blank" rel="noopener" href="https://blog.prototypr.io/how-i-started-drawing-css-images-3fd878675c89">How
+I started drawing CSS
+Images</a>，然后哇哦😦，同样是前端开发，这区别怎么这么大呢？这位作者和我完全点了不同的技能点啊！</p>
+<p>看了几个她在codepen上的作品，比如这个<a
+target="_blank" rel="noopener" href="http://codepen.io/sashatran/pen/VmwmJO">皮卡丘</a>，发现用到的技术也并不多，于是我也想试试。</p>
 <p>不过有哪个动漫中的人物足够简单，能够用几个基本的几何图形就画出来呢？我想到了一个人，于是我决定画一个《一拳超人》中的<del>卤蛋</del>，不对，是<del>秃头披风侠</del>——琦玉老师。</p>
           <!--noindex-->
             <div class="post-button">
@@ -735,11 +860,18 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>这篇博客是我在学习 <a target="_blank" rel="noopener" href="https://app.pluralsight.com/library/courses/javascript-development-environment/recommended-courses">Pluralsight上的课程：Building a JavaScript Development Environment</a> 时记下的笔记，仅作个人记录之用。</p>
+          <p>这篇博客是我在学习 <a
+target="_blank" rel="noopener" href="https://app.pluralsight.com/library/courses/javascript-development-environment/recommended-courses">Pluralsight上的课程：Building
+a JavaScript Development Environment</a>
+时记下的笔记，仅作个人记录之用。</p>
 <p>这门课程系统地介绍了前端开发中的许多工具和术语，从编辑器的选择到项目的部署都进行了介绍，我在学习了这个课程后感觉将之前零散学习的内容串了起来。</p>
-<p>顺便一说，Pluralsight网站上面有许多不错的课程，不过价格太贵，需每月付29美元😥。但是，你可以用微软账号加入<a target="_blank" rel="noopener" href="https://www.visualstudio.com/zh-hans/dev-essentials/">Visual Studio Dev Essentials 计划</a>，这样就可以免费获得Pluralsight 3个月的订阅了😀。</p>
-<hr>
-<h2 id="1-Course-Overview"><a href="#1-Course-Overview" class="headerlink" title="1. Course Overview"></a>1. Course Overview</h2><p>编程的时候要做许多选择</p>
+<p>顺便一说，Pluralsight网站上面有许多不错的课程，不过价格太贵，需每月付29美元😥。但是，你可以用微软账号加入<a
+target="_blank" rel="noopener" href="https://www.visualstudio.com/zh-hans/dev-essentials/">Visual
+Studio Dev Essentials 计划</a>，这样就可以免费获得Pluralsight
+3个月的订阅了😀。</p>
+<hr />
+<h2 id="course-overview">1. Course Overview</h2>
+<p>编程的时候要做许多选择</p>
 <ul>
 <li>Editor</li>
 <li>Module format</li>
@@ -748,7 +880,7 @@
 <li>Bundler</li>
 <li>Linting</li>
 <li>Testing</li>
-<li>…</li>
+<li>...</li>
 </ul>
 <p>这门课程介绍了如何在这些选项中做出选择</p>
           <!--noindex-->
@@ -822,10 +954,18 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>如果是一个刚接触 React 的新手，当学完了 React 的各种基本概念和语法之后，准备开始实际的开发工作时，他又会碰到各种新颖的名词：npm, webpack, babel, flux, es2015…… 如果以前接触过这些工具还好，否则为了建立一个简单的项目，还需要学习这一整套的流程，而在这中间又会碰上各种坑，这个过程将会非常痛苦。一个解决方案是去 GitHub 上寻找各种模板项目，用 React + webpack + … 作为关键字搜索可以发现许多别人创建的空项目，你可以在其基础上稍作修改然后开始开发。我在学习的过程中就是这么做的，但之后对其中的一些配置项仍是一知半解。</p>
+          <p>如果是一个刚接触 React 的新手，当学完了 React
+的各种基本概念和语法之后，准备开始实际的开发工作时，他又会碰到各种新颖的名词：npm,
+webpack, babel, flux, es2015……
+如果以前接触过这些工具还好，否则为了建立一个简单的项目，还需要学习这一整套的流程，而在这中间又会碰上各种坑，这个过程将会非常痛苦。一个解决方案是去
+GitHub 上寻找各种模板项目，用 React + webpack + ...
+作为关键字搜索可以发现许多别人创建的空项目，你可以在其基础上稍作修改然后开始开发。我在学习的过程中就是这么做的，但之后对其中的一些配置项仍是一知半解。</p>
 <p>我在这里从头开始创建一个模板项目，并将过程记录下来，一方面希望能给看到这篇文章的人以帮助，另一方面也是加深我自己的理解。</p>
-<p>最后完成的项目见这个项目：<a target="_blank" rel="noopener" href="https://github.com/noiron/react-webpack-babel-boilerplate">react-webpack-babel-boilerplate</a>，在建立这个项目过程中的步骤可见另一个项目：<a target="_blank" rel="noopener" href="https://github.com/noiron/create-react-boilerplate-steps">create-react-boilerplate-steps</a>，过程被分到了多个文件夹中。</p>
-<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><p>在开始之前先看看项目的文件结构：</p>
+<p>最后完成的项目见这个项目：<a
+target="_blank" rel="noopener" href="https://github.com/noiron/react-webpack-babel-boilerplate">react-webpack-babel-boilerplate</a>，在建立这个项目过程中的步骤可见另一个项目：<a
+target="_blank" rel="noopener" href="https://github.com/noiron/create-react-boilerplate-steps">create-react-boilerplate-steps</a>，过程被分到了多个文件夹中。</p>
+<h2 id="项目结构">项目结构</h2>
+<p>在开始之前先看看项目的文件结构：</p>
 <pre><code>- src
   - index.js
   - App.js
@@ -833,90 +973,12 @@
 - index.html
 - package.json
 - server.js
-- webpack.config.js
-</code></pre><p>以上就是我们的项目需要的全部文件了。</p>
+- webpack.config.js</code></pre>
+<p>以上就是我们的项目需要的全部文件了。</p>
 <p>接下来我会将这个项目的构建过程分解成几个步骤，你只要按照这些步骤依次进行即可。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2016/09/14/create-a-react-webpack-es6-project/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2016/06/19/write-a-simplest-todolist-with-reactjs/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="noiron">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="吴锴的博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/19/write-a-simplest-todolist-with-reactjs/" class="post-title-link" itemprop="url">用 React.js 写一个最简单的 To-do List 应用</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-19 00:00:00" itemprop="dateCreated datePublished" datetime="2016-06-19T00:00:00+08:00">2016-06-19</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-02-16 21:57:16" itemprop="dateModified" datetime="2022-02-16T21:57:16+08:00">2022-02-16</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>前段时间忙着找工作去了，有段时间没有写博客了，上一篇还是三月份的，今天来更新一篇。</p>
-<hr>
-<p>最近在学 React.js，也写了一些练习的项目，之前参考网上的一些代码写了一个很简单的 to-do list。对于初学者来说，写个基本的 to-do list 对于理解 React 中的一些概念及语法倒是挺有帮助的。</p>
-<p>现在很多的 React 项目中已经开始使用 ES6 来写了，不过因为我在学习 React 的时候看的教程大多都是用 ES5 写的，我这里还是用的还是更熟悉的 ES5 写法，虽然有点落伍了，但若想改成 ES6 版本倒也挺方便的。</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/noiron/simplest-react-todolist">GitHub 上的项目地址</a><br><a href="http://www.wukai.me/simplest-react-todolist">在线 demo</a></p>
-</blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/06/19/write-a-simplest-todolist-with-reactjs/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1007,14 +1069,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">38</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1137,6 +1199,8 @@ if (document.querySelectorAll('pre.mermaid').length) {
 }
 </script>
 
+
+  
 
   
 

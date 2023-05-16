@@ -161,6 +161,88 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2016/01/01/mouse-drag-effect/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="noiron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="吴锴的博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/01/01/mouse-drag-effect/" class="post-title-link" itemprop="url">学习笔记：实现登录界面上的鼠标拖拽效果</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-01-01 00:00:00" itemprop="dateCreated datePublished" datetime="2016-01-01T00:00:00+08:00">2016-01-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-12-21 21:55:03" itemprop="dateModified" datetime="2021-12-21T21:55:03+08:00">2021-12-21</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>这是学习了<a
+target="_blank" rel="noopener" href="http://www.imooc.com/learn/60">慕课网教程</a>后的学习笔记，最终结果如下：<a
+target="_blank" rel="noopener" href="http://noiron.github.io/learn-front-end/mouse-drag-effect/">GitHub链接</a></p>
+<h2 id="分析界面结构">分析界面结构</h2>
+<p>因为我们需要实现的是登录浮层，所以为了方便起见，直接将网页的其余部分作为一张背景图片展现出来。</p>
+<p>整个登录对话框（dialog）分为两个大的部分，上部的标题（dialogTitle）和下部的内容部分（dialogContent）。当我们点击在标题部分时，将会触发相应的拖拽效果。</p>
+<figure>
+<img src="/asset/images/2016-1-1-mouse-drag-dialog.png"
+alt="对话框结构分析" />
+<figcaption aria-hidden="true">对话框结构分析</figcaption>
+</figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/01/01/mouse-drag-effect/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2015/12/28/threejs-collision/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -207,17 +289,21 @@
 
       
           <p>最近在试着用Three.js做一个简单的赛车游戏，里面有一个需要解决的问题是如何判断两个物体发生了碰撞，比如赛车是否碰上了障碍物或者获得了奖励物品。</p>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>我找了一些资料，发现了两个示例程序：<a target="_blank" rel="noopener" href="https://stemkoski.github.io/Three.js/Collision-Detection.html">第一个示例</a>、<a target="_blank" rel="noopener" href="http://webmaestro.fr/collisions-detection-three-js-raycasting/">第二个示例</a>。</p>
+<h2 id="示例">示例</h2>
+<p>我找了一些资料，发现了两个示例程序：<a
+target="_blank" rel="noopener" href="https://stemkoski.github.io/Three.js/Collision-Detection.html">第一个示例</a>、<a
+target="_blank" rel="noopener" href="http://webmaestro.fr/collisions-detection-three-js-raycasting/">第二个示例</a>。</p>
 <p>以上两个程序都是用<code>THREE.Raycaster</code>类来解决问题的。</p>
-<h2 id="Raycaster类"><a href="#Raycaster类" class="headerlink" title="Raycaster类"></a>Raycaster类</h2><p><a target="_blank" rel="noopener" href="http://threejs.org/docs/#Reference/Core/Raycaster">Raycaster</a>应该翻译为“光线投射”，顾名思义，就是投射出去的一束光线。</p>
+<h2 id="raycaster类">Raycaster类</h2>
+<p><a
+target="_blank" rel="noopener" href="http://threejs.org/docs/#Reference/Core/Raycaster">Raycaster</a>应该翻译为“光线投射”，顾名思义，就是投射出去的一束光线。</p>
 <p>Raycaster的构造函数如下</p>
 <pre><code>Raycaster( origin, direction, near, far ) &#123;
 
 origin — 射线的起点向量。
 direction — 射线的方向向量，应该归一化。
 near — 所有返回的结果应该比 near 远。Near不能为负，默认值为0。
-far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认值为无穷大。
-</code></pre>
+far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认值为无穷大。</code></pre>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2015/12/28/threejs-collision/#more" rel="contents">
@@ -289,8 +375,11 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>Three.js是一个很流行的3D JavaScript库。<a target="_blank" rel="noopener" href="http://creativejs.com/tutorials/three-js-part-1-make-a-star-field/">这里</a>有一个three.js的入门教程，在浏览器窗口中画出星空。我按照教程重新实现了一遍，这里的这篇博客把教程大致翻译了一遍。<a target="_blank" rel="noopener" href="http://noiron.github.io/star-field-threejs/">我的demo</a>。</p>
-<h2 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h2><p>定义全局变量：</p>
+          <p>Three.js是一个很流行的3D JavaScript库。<a
+target="_blank" rel="noopener" href="http://creativejs.com/tutorials/three-js-part-1-make-a-star-field/">这里</a>有一个three.js的入门教程，在浏览器窗口中画出星空。我按照教程重新实现了一遍，这里的这篇博客把教程大致翻译了一遍。<a
+target="_blank" rel="noopener" href="http://noiron.github.io/star-field-threejs/">我的demo</a>。</p>
+<h2 id="变量">变量</h2>
+<p>定义全局变量：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// three.js的主要部分</span></span><br><span class="line"><span class="keyword">var</span> camera, scene, renderer,</span><br><span class="line"></span><br><span class="line"><span class="comment">// 跟踪鼠标位置</span></span><br><span class="line">mouseX = <span class="number">0</span>, mouseY = <span class="number">0</span>,</span><br><span class="line"></span><br><span class="line"><span class="comment">// 一个数组，用于存储我们的粒子</span></span><br><span class="line">particles = [];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化</span></span><br><span class="line">init();</span><br></pre></td></tr></table></figure>
           <!--noindex-->
             <div class="post-button">
@@ -363,12 +452,19 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>CSS3提供了一些绘图和动画的功能，我们可以纯粹利用CSS3来画出一个在屏幕上旋转的立方体，<a target="_blank" rel="noopener" href="http://noiron.github.io/css3-cube/">demo戳这里</a>。</p>
+          <p>CSS3提供了一些绘图和动画的功能，我们可以纯粹利用CSS3来画出一个在屏幕上旋转的立方体，<a
+target="_blank" rel="noopener" href="http://noiron.github.io/css3-cube/">demo戳这里</a>。</p>
 <p>立方体是由六个面组成的，每个面都是一个<code>&lt;div&gt;</code>元素。我们需要对每个面进行位置和方向的调整，才能组合显示成一个立方体。先来看看CSS3中使用的<strong>三维坐标系</strong>。</p>
-<h2 id="三维坐标系"><a href="#三维坐标系" class="headerlink" title="三维坐标系"></a>三维坐标系</h2><p><img src="/asset/images/css-3d-coordinates.jpg" alt="三维坐标示意图"></p>
+<h2 id="三维坐标系">三维坐标系</h2>
+<figure>
+<img src="/asset/images/css-3d-coordinates.jpg" alt="三维坐标示意图" />
+<figcaption aria-hidden="true">三维坐标示意图</figcaption>
+</figure>
 <p>这里的坐标系与立体几何中的坐标系有所不同。上图中，由左至右为x轴的正方向，而Y轴则是由上至下，Z轴由屏幕内指向屏幕外。</p>
-<h2 id="transform属性"><a href="#transform属性" class="headerlink" title="transform属性"></a>transform属性</h2><p>transform属性用于向元素应用2D或3D转换，在绘制立方体的过程中用到了<strong>旋转</strong>和<strong>平移</strong>这两种。</p>
-<h3 id="平移"><a href="#平移" class="headerlink" title="平移"></a>平移</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">translateX(<span class="number">200px</span>);    <span class="comment">/*向X轴的正方向平移200像素，即从左向右移动*/</span></span><br><span class="line">translateY(<span class="number">200px</span>);    <span class="comment">/*向Y轴的正方向平移200像素，即从上向下移动*/</span></span><br><span class="line">translateZ(<span class="number">200px</span>);    <span class="comment">/*向Z轴的正方向平移200像素，即从屏幕内向外移动*/</span></span><br></pre></td></tr></table></figure>
+<h2 id="transform属性">transform属性</h2>
+<p>transform属性用于向元素应用2D或3D转换，在绘制立方体的过程中用到了<strong>旋转</strong>和<strong>平移</strong>这两种。</p>
+<h3 id="平移">平移</h3>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">translateX(<span class="number">200px</span>);    <span class="comment">/*向X轴的正方向平移200像素，即从左向右移动*/</span></span><br><span class="line">translateY(<span class="number">200px</span>);    <span class="comment">/*向Y轴的正方向平移200像素，即从上向下移动*/</span></span><br><span class="line">translateZ(<span class="number">200px</span>);    <span class="comment">/*向Z轴的正方向平移200像素，即从屏幕内向外移动*/</span></span><br></pre></td></tr></table></figure>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2015/10/22/css3-cube/#more" rel="contents">
@@ -440,24 +536,33 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="Markdown用法"><a href="#Markdown用法" class="headerlink" title="Markdown用法"></a>Markdown用法</h2><p>最初编辑时间：2015/3/22</p>
-<p>参考网址：  </p>
+          <h2 id="markdown用法">Markdown用法</h2>
+<p>最初编辑时间：2015/3/22</p>
+<p>参考网址：</p>
 <blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/1e402922ee32?search_token=dcba45c6dceec8e5ea85d05a7c62469c7afff6eaf37cbbe82706c27cf7a90eb2">Markdown——入门指南</a></p>
+<p><a
+target="_blank" rel="noopener" href="http://www.jianshu.com/p/1e402922ee32?search_token=dcba45c6dceec8e5ea85d05a7c62469c7afff6eaf37cbbe82706c27cf7a90eb2">Markdown——入门指南</a></p>
 </blockquote>
 <blockquote>
-<p><a target="_blank" rel="noopener" href="http://zh.wikipedia.org/wiki/Markdown">Markdown中文维基百科</a></p>
+<p><a
+target="_blank" rel="noopener" href="http://zh.wikipedia.org/wiki/Markdown">Markdown中文维基百科</a></p>
 </blockquote>
 <blockquote>
-<p><a target="_blank" rel="noopener" href="http://www.markdown.cn/#paragraphs-and-line-breaks">Markdown语法说明</a></p>
+<p><a
+target="_blank" rel="noopener" href="http://www.markdown.cn/#paragraphs-and-line-breaks">Markdown语法说明</a></p>
 </blockquote>
-<p>Markdown 是一种用来写作的轻量级「标记语言」，它用简洁的语法代替排版。</p>
-<h2 id="换行"><a href="#换行" class="headerlink" title="换行"></a>换行</h2><p>在文本中输入的换行会从最终生成的结果中删除，浏览器会根据可用空间自动换行。如果想强迫换行，可以在行尾插入至少两个空格。</p>
-<h2 id="标题"><a href="#标题" class="headerlink" title="标题"></a>标题</h2><p>在 Markdown 中，如果一段文字被定义为标题，只要在这段文字前加 # 号即可。</p>
+<p>Markdown
+是一种用来写作的轻量级「标记语言」，它用简洁的语法代替排版。</p>
+<h2 id="换行">换行</h2>
+<p>在文本中输入的换行会从最终生成的结果中删除，浏览器会根据可用空间自动换行。如果想强迫换行，可以在行尾插入至少两个空格。</p>
+<h2 id="标题">标题</h2>
+<p>在 Markdown 中，如果一段文字被定义为标题，只要在这段文字前加 #
+号即可。</p>
 <pre><code># 一级标题
 ## 二级标题
-### 三级标题
-</code></pre><p>以此类推，总共六级标题，建议在井号后加一个空格，这是最标准的 Markdown 语法。</p>
+### 三级标题</code></pre>
+<p>以此类推，总共六级标题，建议在井号后加一个空格，这是最标准的 Markdown
+语法。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2015/10/12/markdown-note/#more" rel="contents">
@@ -529,8 +634,11 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>zz85在<a target="_blank" rel="noopener" href="http://jsdo.it/zz85/7jWa">这里</a>用简单的代码就生成了一张随机的城市地图。生成地图与画一棵随机的树十分相似，都是先给出初始的元素，每个元素在满足条件时会生成新的子代，最后由所有的元素共同组成了我们想要的地图或树。</p>
-<p>地图中的每一条道路对应程序中的一个Boid对象，Boid对象中用两个向量分别表示道路的起点和终点坐标。程序中的向量是使用 <a target="_blank" rel="noopener" href="http://threejs.org/"><strong>Three.js</strong></a> 这个库中的<code>Vector2</code>对象来表示的。</p>
+          <p>zz85在<a
+target="_blank" rel="noopener" href="http://jsdo.it/zz85/7jWa">这里</a>用简单的代码就生成了一张随机的城市地图。生成地图与画一棵随机的树十分相似，都是先给出初始的元素，每个元素在满足条件时会生成新的子代，最后由所有的元素共同组成了我们想要的地图或树。</p>
+<p>地图中的每一条道路对应程序中的一个Boid对象，Boid对象中用两个向量分别表示道路的起点和终点坐标。程序中的向量是使用
+<a target="_blank" rel="noopener" href="http://threejs.org/"><strong>Three.js</strong></a>
+这个库中的<code>Vector2</code>对象来表示的。</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用three.js中的向量来表示</span></span><br><span class="line"><span class="built_in">this</span>.start = <span class="keyword">new</span> THREE.Vector2(x, y);</span><br><span class="line"><span class="built_in">this</span>.end = <span class="keyword">new</span> THREE.Vector2(x, y);</span><br></pre></td></tr></table></figure>
 <p>Boid对象还有这些属性：</p>
 <ul>
@@ -615,8 +723,10 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>看到<a target="_blank" rel="noopener" href="http://kennethjorgensen.com/blog/2014/canvas-trees">这个网页</a>中在canvas里绘制一棵树，感到很有趣，于是仿照他的源代码，同样也利用JavaScript生成了一棵树。</p>
-<p>在程序中需要两个对象Branch, BranchCollection。Branch中存放当前正在绘制的这一段树枝的信息，BranchCollection中存放的是所有的树枝。</p>
+          <p>看到<a
+target="_blank" rel="noopener" href="http://kennethjorgensen.com/blog/2014/canvas-trees">这个网页</a>中在canvas里绘制一棵树，感到很有趣，于是仿照他的源代码，同样也利用JavaScript生成了一棵树。</p>
+<p>在程序中需要两个对象Branch,
+BranchCollection。Branch中存放当前正在绘制的这一段树枝的信息，BranchCollection中存放的是所有的树枝。</p>
 <p>首先对canvas画布进行初始设置：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> width = <span class="built_in">window</span>.innerWidth;</span><br><span class="line"><span class="keyword">var</span> height = <span class="built_in">window</span>.innerHeight;</span><br><span class="line"><span class="keyword">var</span> canvas = <span class="built_in">document</span>.getElementById(<span class="string">&quot;canvastree&quot;</span>);</span><br><span class="line">canvas.width = width;</span><br><span class="line">canvas.height = height;</span><br></pre></td></tr></table></figure>
 <p>对初始的branch的数量、半径进行设置：</p>
@@ -696,22 +806,18 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
       
           <p>这段时间看了一些爬虫的程序，因此想可以写一个程序来爬取煎蛋网的段子栏目，这样就可以直接在命令行下面看段子，还可以过滤掉一些质量低的段子。</p>
 <p>我们的爬虫程序需要定义一个<code>Spider_Model</code>class作为程序的主体，类包含以下的几个函数：</p>
-<ol>
-<li><p><code>__init__</code>：一些变量的初始化。</p>
-</li>
-<li><p><code>GetPage</code>：根据要求的URL链接提取所有的段子添加到列表中并且返回列表</p>
-</li>
-<li><p><code>LoadPage</code>：如果当前已保存的页面小于2个，则调用<code>GetPage</code>获取新的页面</p>
-</li>
-<li><p><code>ShowPage</code>：根据需要的格式显示段子内容、赞数、反对数</p>
-</li>
-<li><p><code>Start</code>：程序从这里开始</p>
-</li>
+<ol type="1">
+<li><p><code>__init__</code>：一些变量的初始化。</p></li>
+<li><p><code>GetPage</code>：根据要求的URL链接提取所有的段子添加到列表中并且返回列表</p></li>
+<li><p><code>LoadPage</code>：如果当前已保存的页面小于2个，则调用<code>GetPage</code>获取新的页面</p></li>
+<li><p><code>ShowPage</code>：根据需要的格式显示段子内容、赞数、反对数</p></li>
+<li><p><code>Start</code>：程序从这里开始</p></li>
 </ol>
 <p>煎蛋网段子的网址是以下这种形式的：</p>
-<pre><code>http://jandan.net/duan/page-328#comments
-</code></pre><p>在程序中可以根据修改中间数字的而到达不同的页面。</p>
-<p>为了能用Python来找出段子的位置，就要利用到正则表达式，在程序的开始要<code>import re</code>。首先查看一下网页源代码：<br><img src="/asset/images/2015-04-18-jandan_source_code.png" alt=""></p>
+<pre><code>http://jandan.net/duan/page-328#comments</code></pre>
+<p>在程序中可以根据修改中间数字的而到达不同的页面。</p>
+<p>为了能用Python来找出段子的位置，就要利用到正则表达式，在程序的开始要<code>import re</code>。首先查看一下网页源代码：
+<img src="/asset/images/2015-04-18-jandan_source_code.png" /></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2015/04/18/%E7%94%A8Python%E5%86%99%E7%88%AC%E8%99%AB%E7%A8%8B%E5%BA%8F%E8%8E%B7%E5%BE%97%E7%85%8E%E8%9B%8B%E7%BD%91%E4%B8%8A%E7%9A%84%E6%AE%B5%E5%AD%90/#more" rel="contents">
@@ -784,10 +890,13 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
 
       
           <blockquote>
-<p><a target="_blank" rel="noopener" href="http://python.jobbole.com/81244/">http://python.jobbole.com/81244/</a><br><a target="_blank" rel="noopener" href="http://www.pulpcode.cn/program-language/2014/12/23/python-encode/">http://www.pulpcode.cn/program-language/2014/12/23/python-encode/</a></p>
+<p>http://python.jobbole.com/81244/
+http://www.pulpcode.cn/program-language/2014/12/23/python-encode/</p>
 </blockquote>
-<h2 id="str与字节码"><a href="#str与字节码" class="headerlink" title="str与字节码"></a>str与字节码</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s = <span class="string">&quot;人生苦短&quot;</span></span><br></pre></td></tr></table></figure>
-<p>s是个字符串，它本身存储的就是字节码。<br>（字节码（英语：Bytecode）通常指的是已经经过编译，但与特定机器码无关，需要直译器转译后才能成为机器码的中间代码。）</p>
+<h2 id="str与字节码">str与字节码</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s = <span class="string">&quot;人生苦短&quot;</span></span><br></pre></td></tr></table></figure>
+<p>s是个字符串，它本身存储的就是字节码。
+（字节码（英语：Bytecode）通常指的是已经经过编译，但与特定机器码无关，需要直译器转译后才能成为机器码的中间代码。）</p>
 <p>如果这段代码是在解释器上输入的，那么这个s的格式就是解释器的编码格式，对于windows的cmd而言，就是gbk。</p>
 <p>如果将段代码是保存后才执行的，比如存储为utf-8，那么在解释器载入这段程序的时候，就会将s初始化为utf-8编码。</p>
           <!--noindex-->
@@ -861,17 +970,19 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="HTML-CSS基础课笔记"><a href="#HTML-CSS基础课笔记" class="headerlink" title="HTML+CSS基础课笔记"></a>HTML+CSS基础课笔记</h1><p>本文档是我学习慕课网（imooc）的HTML+CSS基础课程的笔记  <a target="_blank" rel="noopener" href="http://www.imooc.com/learn/9">课程地址</a></p>
-<h1 id="1-Html介绍"><a href="#1-Html介绍" class="headerlink" title="1. Html介绍"></a>1. Html介绍</h1><h2 id="1-2-Html和CSS的关系"><a href="#1-2-Html和CSS的关系" class="headerlink" title="1.2 Html和CSS的关系"></a>1.2 Html和CSS的关系</h2><p>学习web前端开发基础技术需要掌握：HTML，CSS，JavaScript语言。</p>
-<ol>
-<li><p><strong>HTML是网页内容的载体。</strong>内容就是网页制作者放在页面上想要让用户浏览的信息。</p>
-</li>
-<li><p><strong>CSS样式是表现。</strong>比如，标题字体、颜色变化，或为标题加入背景图片、边框等。所有这些用来改变内容外观的东西成为表现。</p>
-</li>
-<li><p><strong>JavaScript是用来实现网页上的特效效果。</strong>可以这么理解，有动画的，有交互的一般都是用JavaScript来实现的。</p>
-</li>
+          <h1 id="htmlcss基础课笔记">HTML+CSS基础课笔记</h1>
+<p>本文档是我学习慕课网（imooc）的HTML+CSS基础课程的笔记 <a
+target="_blank" rel="noopener" href="http://www.imooc.com/learn/9">课程地址</a></p>
+<h1 id="html介绍">1. Html介绍</h1>
+<h2 id="html和css的关系">1.2 Html和CSS的关系</h2>
+<p>学习web前端开发基础技术需要掌握：HTML，CSS，JavaScript语言。</p>
+<ol type="1">
+<li><p><strong>HTML是网页内容的载体。</strong>内容就是网页制作者放在页面上想要让用户浏览的信息。</p></li>
+<li><p><strong>CSS样式是表现。</strong>比如，标题字体、颜色变化，或为标题加入背景图片、边框等。所有这些用来改变内容外观的东西成为表现。</p></li>
+<li><p><strong>JavaScript是用来实现网页上的特效效果。</strong>可以这么理解，有动画的，有交互的一般都是用JavaScript来实现的。</p></li>
 </ol>
-<h2 id="1-3-认识html标签"><a href="#1-3-认识html标签" class="headerlink" title="1.3 认识html标签"></a>1.3 认识html标签</h2><p>可以这么说，网页中每一个内容在浏览器中的显示，都要存放到各种标签中。</p>
+<h2 id="认识html标签">1.3 认识html标签</h2>
+<p>可以这么说，网页中每一个内容在浏览器中的显示，都要存放到各种标签中。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2015/01/22/HTML+CSS%E5%9F%BA%E7%A1%80%E8%AF%BE%20%E7%AC%94%E8%AE%B0/#more" rel="contents">
@@ -965,14 +1076,14 @@ far — 所有返回的结果应该比 far 近。Far 不能小于 near，默认�
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">38</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1095,6 +1206,8 @@ if (document.querySelectorAll('pre.mermaid').length) {
 }
 </script>
 
+
+  
 
   
 

@@ -212,7 +212,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>最近在写一个管理 markdown 文件的工具 <a target="_blank" rel="noopener" href="https://github.com/noiron/knowledge-center">knowledge-center</a>，需要读取指定文件夹内所有 markdown 文件。因此需要用 Node.js 来实现遍历一个文件夹内所有文件的功能。</p>
+        <p>最近在写一个管理 markdown 文件的工具 <a
+target="_blank" rel="noopener" href="https://github.com/noiron/knowledge-center">knowledge-center</a>，需要读取指定文件夹内所有
+markdown 文件。因此需要用 Node.js
+来实现遍历一个文件夹内所有文件的功能。</p>
 <p>Node.js 中提供了这些有用的 API：</p>
 <ul>
 <li><code>fs.readdir</code>：异步读取文件夹</li>
@@ -220,38 +223,55 @@
 <li><code>fs.statSync</code>：同步获取文件属性</li>
 </ul>
 <span id="more"></span>
-<h2 id="获取的文件列表为数组格式"><a href="#获取的文件列表为数组格式" class="headerlink" title="获取的文件列表为数组格式"></a>获取的文件列表为数组格式</h2><p>对于遍历的结果，我们可以选择按列表或文件树来展示。先从最简单的情况看起，用同步方式处理，返回结果是一个列表。</p>
+<h2 id="获取的文件列表为数组格式">获取的文件列表为数组格式</h2>
+<p>对于遍历的结果，我们可以选择按列表或文件树来展示。先从最简单的情况看起，用同步方式处理，返回结果是一个列表。</p>
 <script src="https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=traverseFolderList.js"></script>
-
-<p>先使用 <code>fs.readdirSync</code> 获取文件列表，然后遍历文件列表，使用 <code>fs.statSync</code> 获取列表中文件的状态，如果是文件，则添加到文件列表中，如果是文件夹，则递归调用 <code>traverseFolderList</code> 函数，直到获取到所有文件。</p>
-<h2 id="获取的文件列表为对象格式"><a href="#获取的文件列表为对象格式" class="headerlink" title="获取的文件列表为对象格式"></a>获取的文件列表为对象格式</h2><p>如果我们想展示文件夹目录结构，那么列表格式的就不太方便了。假设有如下的文件夹结构：</p>
+<p>先使用 <code>fs.readdirSync</code>
+获取文件列表，然后遍历文件列表，使用 <code>fs.statSync</code>
+获取列表中文件的状态，如果是文件，则添加到文件列表中，如果是文件夹，则递归调用
+<code>traverseFolderList</code> 函数，直到获取到所有文件。</p>
+<h2 id="获取的文件列表为对象格式">获取的文件列表为对象格式</h2>
+<p>如果我们想展示文件夹目录结构，那么列表格式的就不太方便了。假设有如下的文件夹结构：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">./1</span><br><span class="line">├── 2</span><br><span class="line">│   ├── test2.txt</span><br><span class="line">│   └── test2_1.txt</span><br><span class="line">└── 3</span><br><span class="line">    ├── 4</span><br><span class="line">    │   └── test4.txt</span><br><span class="line">    └── test3.txt</span><br></pre></td></tr></table></figure>
 <p>希望获取到的对象结构如下：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">root</span>: &#123;</span><br><span class="line">    <span class="attr">path</span>: <span class="string">&#x27;./1&#x27;</span>,</span><br><span class="line">    <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>,</span><br><span class="line">    <span class="attr">children</span>: [<span class="string">&#x27;2&#x27;</span>, <span class="string">&#x27;3&#x27;</span>],</span><br><span class="line">    <span class="attr">isRoot</span>: <span class="literal">true</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="number">2</span>: &#123;</span><br><span class="line">    <span class="attr">path</span>: <span class="string">&#x27;2&#x27;</span>,</span><br><span class="line">    <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>,</span><br><span class="line">    <span class="attr">children</span>: [<span class="string">&#x27;2/test2.txt&#x27;</span>, <span class="string">&#x27;2/test2_1.txt&#x27;</span>],</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="number">3</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;3&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>, <span class="attr">children</span>: [<span class="string">&#x27;3/4&#x27;</span>, <span class="string">&#x27;3/test3.txt&#x27;</span>] &#125;,</span><br><span class="line">  <span class="string">&#x27;2/test2.txt&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;2/test2.txt&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;file&#x27;</span> &#125;,</span><br><span class="line">  <span class="string">&#x27;2/test2_1.txt&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;2/test2_1.txt&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;file&#x27;</span> &#125;,</span><br><span class="line">  <span class="string">&#x27;3/4/test4.txt&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;3/4/test4.txt&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>, <span class="attr">children</span>: [] &#125;,</span><br><span class="line">  <span class="string">&#x27;3/4&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;3/4&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;folder&#x27;</span>, <span class="attr">children</span>: [<span class="string">&#x27;3/4/test4.txt&#x27;</span>] &#125;,</span><br><span class="line">  <span class="string">&#x27;3/test3.txt&#x27;</span>: &#123; <span class="attr">path</span>: <span class="string">&#x27;3/test3.txt&#x27;</span>, <span class="attr">type</span>: <span class="string">&#x27;file&#x27;</span> &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>这个对象以文件/文件夹相对于根目录的相对路径为 key，每个节点包含了这些属性：</p>
+<p>这个对象以文件/文件夹相对于根目录的相对路径为
+key，每个节点包含了这些属性：</p>
 <ul>
 <li><code>type</code>：用于区分文件或文件夹类型</li>
 <li><code>path</code>：相对路径</li>
 <li><code>children</code>：如果是文件夹类型，则其中是子文件的相对路径</li>
 </ul>
 <script src="https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=traverseFolderObj.js"></script>
-
-<h2 id="异步方式"><a href="#异步方式" class="headerlink" title="异步方式"></a>异步方式</h2><p>在上面的实现中，都是使用了同步的方式来处理，即 <code>fs.readdirSync</code> 方法，可以使用异步方式来处理吗？</p>
-<p>可以选择 <code>fs.readdir</code> 来异步读取文件夹, 但是回调函数的调用方式不太方便。在 Node 10+ 中提供了 <code>fs.promises</code> API，其中提供了一些文件系统的方法，它们返回的是一个 Promise 对象，而非使用回调函数。这里可以从 <code>fs.promises</code> 中引入 <code>readdir</code> 方法，从而可以使用方便的 <code>async/await</code> 语法来进行异步处理，避免了回调函数的方式。</p>
+<h2 id="异步方式">异步方式</h2>
+<p>在上面的实现中，都是使用了同步的方式来处理，即
+<code>fs.readdirSync</code> 方法，可以使用异步方式来处理吗？</p>
+<p>可以选择 <code>fs.readdir</code> 来异步读取文件夹,
+但是回调函数的调用方式不太方便。在 Node 10+ 中提供了
+<code>fs.promises</code>
+API，其中提供了一些文件系统的方法，它们返回的是一个 Promise
+对象，而非使用回调函数。这里可以从 <code>fs.promises</code> 中引入
+<code>readdir</code> 方法，从而可以使用方便的 <code>async/await</code>
+语法来进行异步处理，避免了回调函数的方式。</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> &#123; readdir &#125; = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>).promises; </span><br></pre></td></tr></table></figure>
 <p>将上面的 <code>traverseFolderList</code> 方法重写为异步格式：</p>
 <script src="https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=asyncTraverseFolderList.js"></script>
-
-<h2 id="比较同步和异步两种方案"><a href="#比较同步和异步两种方案" class="headerlink" title="比较同步和异步两种方案"></a>比较同步和异步两种方案</h2><p><code>traverseFolderList</code> 和 <code>asyncTraverseFolderList</code> 返回的结果都是列表格式，我们可以写一个测试脚本来比较下二者的运行时间：</p>
+<h2 id="比较同步和异步两种方案">比较同步和异步两种方案</h2>
+<p><code>traverseFolderList</code> 和
+<code>asyncTraverseFolderList</code>
+返回的结果都是列表格式，我们可以写一个测试脚本来比较下二者的运行时间：</p>
 <script src="https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=index.js"></script>
-
 <p>分别用两个函数遍历了同一个文件夹十次后，统计结果如下，异步方式比同步方式减少了约18%的时间。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">同步 - 平均耗时：1217.1ms</span><br><span class="line">异步 - 平均耗时：1025.7ms</span><br></pre></td></tr></table></figure>
-<p>注意一点，本文中的代码都是没有做错误处理的，实际上读取文件时可能会出错，因此将相应的代码使用 <code>try...catch</code> 包起来是一个合理的做法。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
-<p><a target="_blank" rel="noopener" href="https://stackoverflow.com/a/45130990">https://stackoverflow.com/a/45130990</a></p>
-<p><a target="_blank" rel="noopener" href="https://nodejs.org/dist/latest-v10.x/docs/api/fs.html#fs_fs_promises_api">fs.promises API</a></p>
-<p><a target="_blank" rel="noopener" href="https://javascript.info/promisify">https://javascript.info/promisify</a></p>
+<p>注意一点，本文中的代码都是没有做错误处理的，实际上读取文件时可能会出错，因此将相应的代码使用
+<code>try...catch</code> 包起来是一个合理的做法。</p>
+<h2 id="参考资料">参考资料</h2>
+<blockquote>
+<p>https://stackoverflow.com/a/45130990</p>
+<p><a
+target="_blank" rel="noopener" href="https://nodejs.org/dist/latest-v10.x/docs/api/fs.html#fs_fs_promises_api">fs.promises
+API</a></p>
+<p>https://javascript.info/promisify</p>
 </blockquote>
 
     </div>
@@ -409,14 +429,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">38</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -539,6 +559,8 @@ if (document.querySelectorAll('pre.mermaid').length) {
 }
 </script>
 
+
+  
 
   
 

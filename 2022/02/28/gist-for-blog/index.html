@@ -218,37 +218,69 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>如果想在博客中分享代码片段，我们可以直接把代码复制过来，也可以利用 Github 的 Gist 代码片段来分享代码。</p>
-<p>现在考虑这样一种情况，如果想分享的代码来自于一个 repo 中的文件，博客中需要引用其中的代码。比如在我的上一篇文章<a href="http://www.wukai.me/2022/02/27/nodejs-traverse-folder">使用 Nodejs 遍历文件夹</a>中，所有的代码都来自于这个 repo: <a target="_blank" rel="noopener" href="https://github.com/noiron/traverse-folder">traverse-folder</a>。如果直接复制代码，则不能保证 repo 和博客间的代码同步。当 repo 中的文件发生改动时，除非手动编辑博客相应位置，否则博客中的就是旧的代码。而在博客中引用 gist，虽然 gist 的更新会直接展示在博客中，但是仍然需要手动更新 gist。</p>
-<p>基于此，我们可以采用这样的一种思路，通过<em>某种方式</em>自动将 repo 中的文件同步至 gist，然后在博客中引用 gist，从而保证更新了 repo 中的文件后，博客中的代码也会自动更新。</p>
+        <p>如果想在博客中分享代码片段，我们可以直接把代码复制过来，也可以利用
+Github 的 Gist 代码片段来分享代码。</p>
+<p>现在考虑这样一种情况，如果想分享的代码来自于一个 repo
+中的文件，博客中需要引用其中的代码。比如在我的上一篇文章<a
+href="http://www.wukai.me/2022/02/27/nodejs-traverse-folder">使用 Nodejs
+遍历文件夹</a>中，所有的代码都来自于这个 repo: <a
+target="_blank" rel="noopener" href="https://github.com/noiron/traverse-folder">traverse-folder</a>。如果直接复制代码，则不能保证
+repo 和博客间的代码同步。当 repo
+中的文件发生改动时，除非手动编辑博客相应位置，否则博客中的就是旧的代码。而在博客中引用
+gist，虽然 gist 的更新会直接展示在博客中，但是仍然需要手动更新
+gist。</p>
+<p>基于此，我们可以采用这样的一种思路，通过<em>某种方式</em>自动将 repo
+中的文件同步至 gist，然后在博客中引用 gist，从而保证更新了 repo
+中的文件后，博客中的代码也会自动更新。</p>
 <span id="more"></span>
-<h2 id="Github-Actions"><a href="#Github-Actions" class="headerlink" title="Github Actions"></a>Github Actions</h2><p>这里的<em>某种方式</em>就是用 <strong>Github Actions</strong> 来实现的。Github Action 提供了自动运行的工作流，可以在某些时机触发然后执行相应任务。我们要实现的功能可以在我们每次 push 代码的时候触发，然后同步 gist。</p>
-<p><a target="_blank" rel="noopener" href="https://github.com/marketplace?type=actions">Github 的市场</a>提供了很多官方及第三方的 action，可以从中挑选合适的 action 来实现需求，以下的两个 action 都可以用于实现我们的目的：</p>
+<h2 id="github-actions">Github Actions</h2>
+<p>这里的<em>某种方式</em>就是用 <strong>Github Actions</strong>
+来实现的。Github Action
+提供了自动运行的工作流，可以在某些时机触发然后执行相应任务。我们要实现的功能可以在我们每次
+push 代码的时候触发，然后同步 gist。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/marketplace?type=actions">Github
+的市场</a>提供了很多官方及第三方的 action，可以从中挑选合适的 action
+来实现需求，以下的两个 action 都可以用于实现我们的目的：</p>
 <ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/exuanbo/actions-deploy-gist">actions-deploy-gist</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/Popsiclestick/gist-sync-action">gist-sync-action</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://github.com/exuanbo/actions-deploy-gist">actions-deploy-gist</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://github.com/Popsiclestick/gist-sync-action">gist-sync-action</a></li>
 </ul>
 <p>以 <code>actions-deploy-gist</code> 为例，需要这么几步：</p>
-<ol>
+<ol type="1">
 <li>先创建一个新的 gist</li>
-<li>在<a target="_blank" rel="noopener" href="https://github.com/settings/tokens">这里</a>创建一个新的 token，scope 选择 gist。这里会拿到一个 类似于 <code>ghp_3vDXRBAzjXA5rtDMyWMofSNeLwxL4W3*****</code> 的 access token，会在下一步用到。</li>
-<li>进入 repo 的 Settings &gt; Secrets -&gt; Actions 页面，添加一个 secret，名称为 <code>GIST_TOKEN</code>（名字可随意，只要与后面的配置文件保持一致），值为上面的 token。</li>
+<li>在<a target="_blank" rel="noopener" href="https://github.com/settings/tokens">这里</a>创建一个新的
+token，scope 选择 gist。这里会拿到一个 类似于
+<code>ghp_3vDXRBAzjXA5rtDMyWMofSNeLwxL4W3*****</code> 的 access
+token，会在下一步用到。</li>
+<li>进入 repo 的 Settings &gt; Secrets -&gt; Actions 页面，添加一个
+secret，名称为
+<code>GIST_TOKEN</code>（名字可随意，只要与后面的配置文件保持一致），值为上面的
+token。</li>
 <li>创建一个新的 action，编辑 action 的配置文件，填入相应的文件信息</li>
 </ol>
 <figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">uses:</span> <span class="string">actions/checkout@v2</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Deploy</span></span><br><span class="line">  <span class="attr">uses:</span> <span class="string">exuanbo/actions-deploy-gist@v1</span></span><br><span class="line">  <span class="attr">with:</span></span><br><span class="line">    <span class="comment"># 名字可以是 TOKEN 或 GIST_TOKEN 等等，只要和上面第三步中保持一致即可</span></span><br><span class="line">    <span class="attr">token:</span> <span class="string">$&#123;&#123;</span> <span class="string">secrets.TOKEN</span> <span class="string">&#125;&#125;</span></span><br><span class="line">    <span class="attr">gist_id:</span> <span class="string">from_your_gist_url</span></span><br><span class="line">    <span class="attr">gist_description:</span> <span class="string">&#x27;foo bar&#x27;</span></span><br><span class="line">    <span class="attr">gist_file_name:</span> <span class="string">foo.bar</span></span><br><span class="line">    <span class="attr">file_path:</span> <span class="string">./dist/foo.bar</span></span><br></pre></td></tr></table></figure>
-<p>完整的配置可参考我在这个项目中的<a target="_blank" rel="noopener" href="https://github.com/noiron/traverse-folder/blob/master/.github/workflows/main.yml">配置文件</a>：</p>
+<p>完整的配置可参考我在这个项目中的<a
+target="_blank" rel="noopener" href="https://github.com/noiron/traverse-folder/blob/master/.github/workflows/main.yml">配置文件</a>：</p>
 <script src="https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=main.yml"></script>
-
-<p>有趣的一点，注意到上面的这个 gist 引用中的内容就是 action 的配置，而这个 gist 本身就是靠其中的内容实现了同步，形成了一个<strong>“自指”</strong>。</p>
-<p>因为我需要同步多个文件至一个 gist 中，所以我重复了 <code>uses: exuanbo/actions-deploy-gist@v1.1.2</code> 多次。（这里可能会有更佳的写法，待更新）</p>
+<p>有趣的一点，注意到上面的这个 gist 引用中的内容就是 action
+的配置，而这个 gist
+本身就是靠其中的内容实现了同步，形成了一个<strong>“自指”</strong>。</p>
+<p>因为我需要同步多个文件至一个 gist 中，所以我重复了
+<code>uses: exuanbo/actions-deploy-gist@v1.1.2</code>
+多次。（这里可能会有更佳的写法，待更新）</p>
 <p>完成以上工作后，每次更新 repo，相应的 gist 就会改变了。</p>
-<h2 id="Gist-中多文件如何引用"><a href="#Gist-中多文件如何引用" class="headerlink" title="Gist 中多文件如何引用"></a>Gist 中多文件如何引用</h2><p>接下来我们看下如何在博客中引用 gist：</p>
+<h2 id="gist-中多文件如何引用">Gist 中多文件如何引用</h2>
+<p>接下来我们看下如何在博客中引用 gist：</p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 使用 script 标签是通用的方法 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- 在使用 Hexo 建立的博客中还可以这样写 --&gt;</span></span><br><span class="line">&#123;% gist f6be6840739c7c0fc356659d64db96fc %&#125;</span><br></pre></td></tr></table></figure>
-<p>这里有一个小问题，如果一个 gist 中包含有多个文件，上面的方式会将所有的文件都展示出来，如果想只展示其中一个文件，可以加上文件名，如下：</p>
+<p>这里有一个小问题，如果一个 gist
+中包含有多个文件，上面的方式会将所有的文件都展示出来，如果想只展示其中一个文件，可以加上文件名，如下：</p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 在 url 上用 file 参数带上文件名 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=traverseFolderList.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- 在 gist id 后面再加上文件名 --&gt;</span></span><br><span class="line">&#123;% gist f6be6840739c7c0fc356659d64db96fc traverseFolderList.js %&#125;</span><br></pre></td></tr></table></figure>
 <p>如果文件名中有空格：</p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 使用 %20 来代替空格，注意 encodeURIComponent(&#x27; &#x27;) == &#x27;%20&#x27; --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://gist.github.com/noiron/f6be6840739c7c0fc356659d64db96fc.js?file=Example%20File&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- Hexo 中可以选择用双引号包裹文件名 --&gt;</span></span><br><span class="line">&#123;% gist f6be6840739c7c0fc356659d64db96fc &quot;Example File&quot; %&#125;</span><br></pre></td></tr></table></figure>
-<p>经过上面的操作后，就可以在博客中引用 repo 中的文件了，更新 repo 后，博客中的文件也会保持同步。</p>
+<p>经过上面的操作后，就可以在博客中引用 repo 中的文件了，更新 repo
+后，博客中的文件也会保持同步。</p>
 
     </div>
 
@@ -389,7 +421,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Github-Actions"><span class="nav-number">1.</span> <span class="nav-text">Github Actions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Gist-%E4%B8%AD%E5%A4%9A%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E5%BC%95%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">Gist 中多文件如何引用</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#github-actions"><span class="nav-number">1.</span> <span class="nav-text">Github Actions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gist-%E4%B8%AD%E5%A4%9A%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E5%BC%95%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">Gist 中多文件如何引用</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -405,14 +437,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">38</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -535,6 +567,8 @@ if (document.querySelectorAll('pre.mermaid').length) {
 }
 </script>
 
+
+  
 
   
 

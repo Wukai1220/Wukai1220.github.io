@@ -220,33 +220,58 @@
 
       
         <p>数独游戏的规则很简单，在9x9的矩阵中，每行、每列、每个九宫格中都需要填入1~9共九个数字，且不重复。</p>
-<p>Peter Norvig 的这篇文章 <a target="_blank" rel="noopener" href="https://norvig.com/sudoku.html">Solving Every Sudoku Puzzle</a> 详细介绍了一种解数独的方法。文中的代码基于 Python2 实现，我将其改写成了 JavaScript 的版本，项目可见 <a target="_blank" rel="noopener" href="https://github.com/noiron/sudoku">noiron/sudoku</a>。</p>
+<p>Peter Norvig 的这篇文章 <a
+target="_blank" rel="noopener" href="https://norvig.com/sudoku.html">Solving Every Sudoku Puzzle</a>
+详细介绍了一种解数独的方法。文中的代码基于 Python2 实现，我将其改写成了
+JavaScript 的版本，项目可见 <a
+target="_blank" rel="noopener" href="https://github.com/noiron/sudoku">noiron/sudoku</a>。</p>
 <p>这篇文章中记录了我的理解而非原文的翻译，如果需要更详情的解释，可以查看原文。</p>
 <span id="more"></span>
-<h2 id="数据的表示"><a href="#数据的表示" class="headerlink" title="数据的表示"></a>数据的表示</h2><p>首先需要考虑的是如何表示数据，数独的行使用 A-I 的字母表示，列使用 1-9 的数字表示。代码中用到了以下的术语/变量：</p>
+<h2 id="数据的表示">数据的表示</h2>
+<p>首先需要考虑的是如何表示数据，数独的行使用 A-I 的字母表示，列使用 1-9
+的数字表示。代码中用到了以下的术语/变量：</p>
 <ul>
-<li><code>square</code> 所有81个格子的标记 <code>[&#39;A1&#39;, &#39;A2&#39;, &#39;A3&#39;, ... , &#39;I7&#39;, &#39;I8&#39;, &#39;I9&#39;]</code></li>
+<li><code>square</code> 所有81个格子的标记
+<code>['A1', 'A2', 'A3', ... , 'I7', 'I8', 'I9']</code></li>
 <li><code>unit</code> 一个格子所在的行、列或九宫格</li>
 <li><code>unitList</code> 包含9行、9列、9个九宫格，共27个 unit</li>
 <li><code>peers</code> 格子所在三个 unit 中的其他格子，共20个</li>
-<li><code>grid</code> 使用文本格式来表示数独的初始状态，1~9 代表数字，0或.代表此处未填入</li>
-<li><code>values</code> 一个以 square 为 key 的 map，给出每个格子的可能值，eg. <code>&#123;&#39;A1&#39;:&#39;12349&#39;, &#39;A2&#39;:&#39;8&#39;, ...&#125;</code></li>
+<li><code>grid</code> 使用文本格式来表示数独的初始状态，1~9
+代表数字，0或.代表此处未填入</li>
+<li><code>values</code> 一个以 square 为 key 的
+map，给出每个格子的可能值，eg.
+<code>&#123;'A1':'12349', 'A2':'8', ...&#125;</code></li>
 </ul>
 <p>对于数独的初始状态使用文本格式来表示，如下所示的三种格式代表的是同一个数独：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......</span><br><span class="line"></span><br><span class="line">400000805</span><br><span class="line">030000000</span><br><span class="line">000700000</span><br><span class="line">020000060</span><br><span class="line">000080400</span><br><span class="line">000010000</span><br><span class="line">000603070</span><br><span class="line">500200000</span><br><span class="line">104000000</span><br><span class="line"></span><br><span class="line">4 . . |. . . |8 . 5 </span><br><span class="line">. 3 . |. . . |. . . </span><br><span class="line">. . . |7 . . |. . . </span><br><span class="line">------+------+------</span><br><span class="line">. 2 . |. . . |. 6 . </span><br><span class="line">. . . |. 8 . |4 . . </span><br><span class="line">. . . |. 1 . |. . . </span><br><span class="line">------+------+------</span><br><span class="line">. . . |6 . 3 |. 7 . </span><br><span class="line">5 . . |2 . . |. . . </span><br><span class="line">1 . 4 |. . . |. . . </span><br></pre></td></tr></table></figure>
-<p>这部分的 JS 代码实现可以看代码：<a target="_blank" rel="noopener" href="https://github.com/noiron/sudoku/blob/master/base.js">data.js</a></p>
-<p>开始时，每个格子都可以是 1~9 的任何数字，然后从初始状态开始给每个格子填入相应的数字。解数独的过程就是在减少每个格子可以填入的数字，直到所有格子都能且只能填入1个数字。这里需要用到两种方法：<strong>约束传播（Constraint Propagation）</strong>和<strong>搜索（Search）</strong>。</p>
-<h2 id="约束传播（Constraint-Propagation）"><a href="#约束传播（Constraint-Propagation）" class="headerlink" title="约束传播（Constraint Propagation）"></a>约束传播（Constraint Propagation）</h2><p>在处理数独的初始状态时用了 <code>parseGrid()</code> 函数，其中调用了 <code>assign(values, square, digit)</code> 方法，即将 digit 填入 square。</p>
+<p>这部分的 JS 代码实现可以看代码：<a
+target="_blank" rel="noopener" href="https://github.com/noiron/sudoku/blob/master/base.js">data.js</a></p>
+<p>开始时，每个格子都可以是 1~9
+的任何数字，然后从初始状态开始给每个格子填入相应的数字。解数独的过程就是在减少每个格子可以填入的数字，直到所有格子都能且只能填入1个数字。这里需要用到两种方法：<strong>约束传播（Constraint
+Propagation）</strong>和<strong>搜索（Search）</strong>。</p>
+<h2 id="约束传播constraint-propagation">约束传播（Constraint
+Propagation）</h2>
+<p>在处理数独的初始状态时用了 <code>parseGrid()</code> 函数，其中调用了
+<code>assign(values, square, digit)</code> 方法，即将 digit 填入
+square。</p>
 <p>解数独有两个重要策略：</p>
-<ol>
+<ol type="1">
 <li>如果一个格子只有唯一的可选数字，则从它的 peers 中删除这个数字</li>
-<li>如果一个 unit 中只有一个格子可以填入某一个数字，则将这个数字填入这个格子</li>
+<li>如果一个 unit
+中只有一个格子可以填入某一个数字，则将这个数字填入这个格子</li>
 </ol>
-<p>这里需要使用 <code>assign()</code> 和 <code>eliminate()</code> 两个函数，代码见：<a target="_blank" rel="noopener" href="https://github.com/noiron/sudoku/blob/master/solve.js">solve.js</a></p>
-<p>经过这个过程后一些简单的数独就可以得出解了，但对复杂的数独并非如此。所以需要使用<strong>搜索（Search）</strong> 来进一步处理。</p>
-<h2 id="搜索（Search）"><a href="#搜索（Search）" class="headerlink" title="搜索（Search）"></a>搜索（Search）</h2><p>这里的搜索指的是系统地尝试所有的可能性，直到找到解。对于数独来说就是对于每个未确定的格子，尝试填入一个可能的数字，然后继续搜索。如果出现了矛盾，就换一个数字。这是一个递归的过程，即深度优先搜索（depth-first search）。</p>
-<p><code>search()</code> 函数的具体代码见：<a target="_blank" rel="noopener" href="https://github.com/noiron/sudoku/blob/master/solve.js">solve.js</a></p>
-<h2 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h2><p>整体的流程图如下：</p>
+<p>这里需要使用 <code>assign()</code> 和 <code>eliminate()</code>
+两个函数，代码见：<a
+target="_blank" rel="noopener" href="https://github.com/noiron/sudoku/blob/master/solve.js">solve.js</a></p>
+<p>经过这个过程后一些简单的数独就可以得出解了，但对复杂的数独并非如此。所以需要使用<strong>搜索（Search）</strong>
+来进一步处理。</p>
+<h2 id="搜索search">搜索（Search）</h2>
+<p>这里的搜索指的是系统地尝试所有的可能性，直到找到解。对于数独来说就是对于每个未确定的格子，尝试填入一个可能的数字，然后继续搜索。如果出现了矛盾，就换一个数字。这是一个递归的过程，即深度优先搜索（depth-first
+search）。</p>
+<p><code>search()</code> 函数的具体代码见：<a
+target="_blank" rel="noopener" href="https://github.com/noiron/sudoku/blob/master/solve.js">solve.js</a></p>
+<h2 id="整体流程">整体流程</h2>
+<p>整体的流程图如下：</p>
 <pre class="mermaid" style="text-align: center;">
             flowchart TB
             %% init(初始化)
@@ -405,7 +430,8 @@ found -- 可以 --> 找到答案 --> 结束
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="nav-number">1.</span> <span class="nav-text">数据的表示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%A6%E6%9D%9F%E4%BC%A0%E6%92%AD%EF%BC%88Constraint-Propagation%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">约束传播（Constraint Propagation）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%90%9C%E7%B4%A2%EF%BC%88Search%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">搜索（Search）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">整体流程</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%9A%84%E8%A1%A8%E7%A4%BA"><span class="nav-number">1.</span> <span class="nav-text">数据的表示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%A6%E6%9D%9F%E4%BC%A0%E6%92%ADconstraint-propagation"><span class="nav-number">2.</span> <span class="nav-text">约束传播（Constraint
+Propagation）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%90%9C%E7%B4%A2search"><span class="nav-number">3.</span> <span class="nav-text">搜索（Search）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">整体流程</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -421,14 +447,14 @@ found -- 可以 --> 找到答案 --> 结束
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">38</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -551,6 +577,8 @@ if (document.querySelectorAll('pre.mermaid').length) {
 }
 </script>
 
+
+  
 
   
 

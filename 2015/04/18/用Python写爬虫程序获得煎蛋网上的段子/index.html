@@ -16,12 +16,12 @@
     var CONFIG = {"hostname":"www.wukai.me","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="这段时间看了一些爬虫的程序，因此想可以写一个程序来爬取煎蛋网的段子栏目，这样就可以直接在命令行下面看段子，还可以过滤掉一些质量低的段子。 我们的爬虫程序需要定义一个Spider_Modelclass作为程序的主体，类包含以下的几个函数：  __init__：一些变量的初始化。  GetPage：根据要求的URL链接提取所有的段子添加到列表中并且返回列表  LoadPage：如果当前已保存的页面小于">
+  <meta name="description" content="这段时间看了一些爬虫的程序，因此想可以写一个程序来爬取煎蛋网的段子栏目，这样就可以直接在命令行下面看段子，还可以过滤掉一些质量低的段子。 我们的爬虫程序需要定义一个Spider_Modelclass作为程序的主体，类包含以下的几个函数：  __init__：一些变量的初始化。 GetPage：根据要求的URL链接提取所有的段子添加到列表中并且返回列表 LoadPage：如果当前已保存的页面小于2个">
 <meta property="og:type" content="article">
 <meta property="og:title" content="用Python写爬虫程序获得煎蛋网上的段子">
 <meta property="og:url" content="http://www.wukai.me/2015/04/18/%E7%94%A8Python%E5%86%99%E7%88%AC%E8%99%AB%E7%A8%8B%E5%BA%8F%E8%8E%B7%E5%BE%97%E7%85%8E%E8%9B%8B%E7%BD%91%E4%B8%8A%E7%9A%84%E6%AE%B5%E5%AD%90/index.html">
 <meta property="og:site_name" content="吴锴的博客">
-<meta property="og:description" content="这段时间看了一些爬虫的程序，因此想可以写一个程序来爬取煎蛋网的段子栏目，这样就可以直接在命令行下面看段子，还可以过滤掉一些质量低的段子。 我们的爬虫程序需要定义一个Spider_Modelclass作为程序的主体，类包含以下的几个函数：  __init__：一些变量的初始化。  GetPage：根据要求的URL链接提取所有的段子添加到列表中并且返回列表  LoadPage：如果当前已保存的页面小于">
+<meta property="og:description" content="这段时间看了一些爬虫的程序，因此想可以写一个程序来爬取煎蛋网的段子栏目，这样就可以直接在命令行下面看段子，还可以过滤掉一些质量低的段子。 我们的爬虫程序需要定义一个Spider_Modelclass作为程序的主体，类包含以下的几个函数：  __init__：一些变量的初始化。 GetPage：根据要求的URL链接提取所有的段子添加到列表中并且返回列表 LoadPage：如果当前已保存的页面小于2个">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://www.wukai.me/asset/images/2015-04-18-jandan_source_code.png">
 <meta property="article:published_time" content="2015-04-17T16:00:00.000Z">
@@ -223,31 +223,28 @@
       
         <p>这段时间看了一些爬虫的程序，因此想可以写一个程序来爬取煎蛋网的段子栏目，这样就可以直接在命令行下面看段子，还可以过滤掉一些质量低的段子。</p>
 <p>我们的爬虫程序需要定义一个<code>Spider_Model</code>class作为程序的主体，类包含以下的几个函数：</p>
-<ol>
-<li><p><code>__init__</code>：一些变量的初始化。</p>
-</li>
-<li><p><code>GetPage</code>：根据要求的URL链接提取所有的段子添加到列表中并且返回列表</p>
-</li>
-<li><p><code>LoadPage</code>：如果当前已保存的页面小于2个，则调用<code>GetPage</code>获取新的页面</p>
-</li>
-<li><p><code>ShowPage</code>：根据需要的格式显示段子内容、赞数、反对数</p>
-</li>
-<li><p><code>Start</code>：程序从这里开始</p>
-</li>
+<ol type="1">
+<li><p><code>__init__</code>：一些变量的初始化。</p></li>
+<li><p><code>GetPage</code>：根据要求的URL链接提取所有的段子添加到列表中并且返回列表</p></li>
+<li><p><code>LoadPage</code>：如果当前已保存的页面小于2个，则调用<code>GetPage</code>获取新的页面</p></li>
+<li><p><code>ShowPage</code>：根据需要的格式显示段子内容、赞数、反对数</p></li>
+<li><p><code>Start</code>：程序从这里开始</p></li>
 </ol>
 <p>煎蛋网段子的网址是以下这种形式的：</p>
-<pre><code>http://jandan.net/duan/page-328#comments
-</code></pre><p>在程序中可以根据修改中间数字的而到达不同的页面。</p>
-<p>为了能用Python来找出段子的位置，就要利用到正则表达式，在程序的开始要<code>import re</code>。首先查看一下网页源代码：<br><img src="/asset/images/2015-04-18-jandan_source_code.png" alt=""></p>
+<pre><code>http://jandan.net/duan/page-328#comments</code></pre>
+<p>在程序中可以根据修改中间数字的而到达不同的页面。</p>
+<p>为了能用Python来找出段子的位置，就要利用到正则表达式，在程序的开始要<code>import re</code>。首先查看一下网页源代码：
+<img src="/asset/images/2015-04-18-jandan_source_code.png" /></p>
 <span id="more"></span>
-<p>我们要用正则表达式匹配的内容从<code>&lt;div.*?class=&quot;text&quot;&gt;</code>开始，使用的表达式如下：</p>
+<p>我们要用正则表达式匹配的内容从<code>&lt;div.*?class="text"&gt;</code>开始，使用的表达式如下：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pattern =<span class="string">&#x27;&lt;div.*?class=&quot;text&quot;&gt;&lt;span.*?class=&quot;.*?&quot;&gt;&lt;a.*?href=&quot;.*?&quot;&gt;.*?&lt;/a&gt;&#x27;</span> + \</span><br><span class="line">        <span class="string">&#x27;&lt;/span&gt;&lt;p&gt;(.*?)&lt;/p&gt;\s+&lt;div.*?class=&quot;vote&quot;.*?cos_support-.*?&quot;&gt;(\d+)&lt;/span&gt;.*?cos_unsupport-.*?&quot;&gt;(\d+)&lt;/span&gt;]&lt;/div&gt;&#x27;</span></span><br><span class="line">myItems = re.findall(pattern, unicodePage, re.S)</span><br></pre></td></tr></table></figure>
 <p>这个正则表达式中包括三个括号，依次匹配的内容为段子的内容、oo数、xx数。匹配完成后，将这三项作为一个列表加入到名为items的列表中去。最后items将作为结果返回，这个列表中包含了一个页面中所有段子信息，它的每一个元素是由一条段子的内容、oo数、xx数组成的含有三个元素的列表。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> myItems:</span><br><span class="line">    text = item[<span class="number">0</span>].replace(<span class="string">&quot;&lt;br /&gt;&quot;</span>, <span class="string">&quot; &quot;</span>)</span><br><span class="line">    items.append([text, item[<span class="number">1</span>], item[<span class="number">2</span>]])</span><br></pre></td></tr></table></figure>
 <p><code>GetPage()</code>函数的代码如下：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">GetPage</span>(<span class="params">self, page</span>):</span></span><br><span class="line"></span><br><span class="line">    myUrl = <span class="string">&quot;http://jandan.net/duan/page-&quot;</span> + page + <span class="string">&quot;#comments&quot;</span></span><br><span class="line">    user_agent = <span class="string">&quot;Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)&quot;</span></span><br><span class="line">    headers = &#123;<span class="string">&#x27;User-Agent&#x27;</span> : user_agent&#125;</span><br><span class="line">    req = urllib2.Request(myUrl, headers = headers)</span><br><span class="line">    myResponse = urllib2.urlopen(req)</span><br><span class="line">    myPage = myResponse.read()</span><br><span class="line">    unicodePage = myPage.decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># re.s是任意匹配模式，也就是.可以匹配换行符</span></span><br><span class="line">    pattern =<span class="string">&#x27;&lt;div.*?class=&quot;text&quot;&gt;&lt;span.*?class=&quot;.*?&quot;&gt;&lt;a.*?href=&quot;.*?&quot;&gt;.*?&lt;/a&gt;&#x27;</span> + \</span><br><span class="line">        <span class="string">&#x27;&lt;/span&gt;&lt;p&gt;(.*?)&lt;/p&gt;\s+&lt;div.*?class=&quot;vote&quot;.*?cos_support-.*?&quot;&gt;(\d+)&lt;/span&gt;.*?cos_unsupport-.*?&quot;&gt;(\d+)&lt;/span&gt;]&lt;/div&gt;&#x27;</span></span><br><span class="line">    myItems = re.findall(pattern, unicodePage, re.S)</span><br><span class="line"></span><br><span class="line">    items = []</span><br><span class="line"></span><br><span class="line">    <span class="comment"># myItems中是包含一个页面内所有段子信息的list</span></span><br><span class="line">    <span class="comment"># 每一个元素是一个元组，依次为段子内容、oo数、xx数</span></span><br><span class="line">    <span class="keyword">for</span> item <span class="keyword">in</span> myItems:</span><br><span class="line">        text = item[<span class="number">0</span>].replace(<span class="string">&quot;&lt;br /&gt;&quot;</span>, <span class="string">&quot; &quot;</span>)</span><br><span class="line">        items.append([text, item[<span class="number">1</span>], item[<span class="number">2</span>]])</span><br><span class="line">    <span class="keyword">return</span> items</span><br></pre></td></tr></table></figure>
 <p>在显示段子时，程序会比较oo和xx的数值再加以输出。</p>
-<p>完整的代码见<a target="_blank" rel="noopener" href="https://github.com/wukai1220/Jandan/blob/master/jandan_duan.py">GitHub项目</a></p>
+<p>完整的代码见<a
+target="_blank" rel="noopener" href="https://github.com/wukai1220/Jandan/blob/master/jandan_duan.py">GitHub项目</a></p>
 
     </div>
 
@@ -404,14 +401,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">38</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -534,6 +531,8 @@ if (document.querySelectorAll('pre.mermaid').length) {
 }
 </script>
 
+
+  
 
   
 

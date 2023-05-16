@@ -221,70 +221,127 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>前段时间在寻找一些关于富文本编辑器的资料，然后发现了这个名为 <a target="_blank" rel="noopener" href="https://github.com/jaredreich/pell">Pell</a> 的项目，它是一个所见即所得（WYSIWYG）的文本编辑器，虽然它的功能很简单，但是令人吃惊的是它只有 1kb 大小。而项目最核心的文件 <a target="_blank" rel="noopener" href="https://github.com/jaredreich/pell/blob/master/src/pell.js">pell.js</a> 只有130行，即使加上其它部分，总的 js 数量也不到200行。这引起了我的兴趣，决定看看它的源码是如何做到这一点的。</p>
+        <p>前段时间在寻找一些关于富文本编辑器的资料，然后发现了这个名为 <a
+target="_blank" rel="noopener" href="https://github.com/jaredreich/pell">Pell</a>
+的项目，它是一个所见即所得（WYSIWYG）的文本编辑器，虽然它的功能很简单，但是令人吃惊的是它只有
+1kb 大小。而项目最核心的文件 <a
+target="_blank" rel="noopener" href="https://github.com/jaredreich/pell/blob/master/src/pell.js">pell.js</a>
+只有130行，即使加上其它部分，总的 js
+数量也不到200行。这引起了我的兴趣，决定看看它的源码是如何做到这一点的。</p>
 <span id="more"></span>
-<p>项目的主要代码在 <code>pell.js</code> 文件中，其结构很简单，主要功能的实现依赖于以下的几个部分</p>
+<p>项目的主要代码在 <code>pell.js</code>
+文件中，其结构很简单，主要功能的实现依赖于以下的几个部分</p>
 <ul>
 <li><code>actions</code> 对象</li>
 <li><code>exec()</code> 函数</li>
 <li><code>init()</code> 函数</li>
 </ul>
-<h2 id="Document-execCommand"><a href="#Document-execCommand" class="headerlink" title="Document.execCommand()"></a>Document.execCommand()</h2><p>先从最简单的部分看起， <code>exec()</code> 函数只有下面三行：</p>
+<h2 id="document.execcommand">Document.execCommand()</h2>
+<p>先从最简单的部分看起， <code>exec()</code> 函数只有下面三行：</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> exec = <span class="function">(<span class="params">command, value = <span class="literal">null</span></span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">document</span>.execCommand(command, <span class="literal">false</span>, value);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>它将 <code>document.execCommand()</code> 进行了一个简单的包装，<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand">Document.execCommand()</a> 就是这个编辑器的核心，其语法如下</p>
+<p>它将 <code>document.execCommand()</code> 进行了一个简单的包装，<a
+target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand">Document.execCommand()</a>
+就是这个编辑器的核心，其语法如下</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bool = <span class="built_in">document</span>.execCommand(aCommandName, aShowDefaultUI, aValueArgument)</span><br></pre></td></tr></table></figure>
 <ul>
-<li><code>aCommandName</code> 是表示想执行的命令的字符串，比如：加粗 ‘bold’，创建链接 ‘createLink’，改变字体大小 ‘fontSize’ 等等</li>
+<li><code>aCommandName</code> 是表示想执行的命令的字符串，比如：加粗
+'bold'，创建链接 'createLink'，改变字体大小 'fontSize' 等等</li>
 <li><code>aShowDefaultUI</code> 是否显示默认的用户界面</li>
-<li><code>aValueArgument</code> 有些命令需要额外的输入，如插入图片、链接时需要给出地址</li>
+<li><code>aValueArgument</code>
+有些命令需要额外的输入，如插入图片、链接时需要给出地址</li>
 </ul>
-<p>注：经过我的试验，在 Chrome 下改变 aShowDefaultUI 的值并未发现影响，<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/38188015/what-is-the-the-default-user-interface-referred-to-by-the-ashowdefaultui-param">这个 stackoverflow 的问题</a>中提到这是一个来自于旧版 IE 的参数，所以这里设置为默认的 false 即可。</p>
-<h2 id="actions-对象"><a href="#actions-对象" class="headerlink" title="actions 对象"></a>actions 对象</h2><p>文件中定义了一个名为 <code>actions</code> 的对象，对应的是下图工具栏上的这一行按钮， <code>actions</code> 中的每个子对象都保存了一个按钮的属性。</p>
-<p><img src="/asset/images/2017-12-29-pell-editor-toobar.png" alt="2017-12-29-pell-editor-toobar.png"></p>
+<p>注：经过我的试验，在 Chrome 下改变 aShowDefaultUI
+的值并未发现影响，<a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/38188015/what-is-the-the-default-user-interface-referred-to-by-the-ashowdefaultui-param">这个
+stackoverflow 的问题</a>中提到这是一个来自于旧版 IE
+的参数，所以这里设置为默认的 false 即可。</p>
+<h2 id="actions-对象">actions 对象</h2>
+<p>文件中定义了一个名为 <code>actions</code>
+的对象，对应的是下图工具栏上的这一行按钮， <code>actions</code>
+中的每个子对象都保存了一个按钮的属性。</p>
+<figure>
+<img src="/asset/images/2017-12-29-pell-editor-toobar.png"
+alt="2017-12-29-pell-editor-toobar.png" />
+<figcaption
+aria-hidden="true">2017-12-29-pell-editor-toobar.png</figcaption>
+</figure>
 <p>部分代码：</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> actions = &#123;</span><br><span class="line">    <span class="attr">bold</span>: &#123;</span><br><span class="line">        <span class="attr">icon</span>: <span class="string">&#x27;&lt;b&gt;B&lt;/b&gt;&#x27;</span>,</span><br><span class="line">        <span class="attr">title</span>: <span class="string">&#x27;Bold&#x27;</span>,</span><br><span class="line">        <span class="attr">result</span>: <span class="function">() =&gt;</span> exec(<span class="string">&#x27;bold&#x27;</span>)</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">italic</span>: &#123;</span><br><span class="line">        <span class="attr">icon</span>: <span class="string">&#x27;&lt;i&gt;I&lt;/i&gt;&#x27;</span>,</span><br><span class="line">        <span class="attr">title</span>: <span class="string">&#x27;Italic&#x27;</span>,</span><br><span class="line">        <span class="attr">result</span>: <span class="function">() =&gt;</span> exec(<span class="string">&#x27;italic&#x27;</span>)</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">underline</span>: &#123;</span><br><span class="line">        <span class="attr">icon</span>: <span class="string">&#x27;&lt;u&gt;U&lt;/u&gt;&#x27;</span>,</span><br><span class="line">        <span class="attr">title</span>: <span class="string">&#x27;Underline&#x27;</span>,</span><br><span class="line">        <span class="attr">result</span>: <span class="function">() =&gt;</span> exec(<span class="string">&#x27;underline&#x27;</span>)</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="comment">// …</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这段代码中显示了名为 <code>bold</code>，<code>italic</code>，<code>underline</code> 的三个对象属性，对应于工具栏中前方的<strong>加粗</strong>、<em>斜体</em>、下划线按钮，可以看出它们的结构是相同的，都有下列三个属性：</p>
+<p>这段代码中显示了名为
+<code>bold</code>，<code>italic</code>，<code>underline</code>
+的三个对象属性，对应于工具栏中前方的<strong>加粗</strong>、<em>斜体</em>、下划线按钮，可以看出它们的结构是相同的，都有下列三个属性：</p>
 <ul>
 <li><code>icon</code>: 如何在工具栏中显示</li>
 <li><code>title</code>: 就是 title 啦</li>
-<li><code>result</code>: 一个函数，会赋给按钮作为点击事件，调用之前所提到的 <code>exec()</code> 函数来对文本进行操作</li>
+<li><code>result</code>:
+一个函数，会赋给按钮作为点击事件，调用之前所提到的 <code>exec()</code>
+函数来对文本进行操作</li>
 </ul>
-<p>现在已有了 <code>actions</code> 对象，那么如何使用它呢？这就要看看 <code>init()</code> 函数了，它会根据一定的规则从 <code>actions</code> 对象中选出元素组成一个数组，数组的每一项都会生成一个按钮。下面代码中的 <code>settings.actions</code> 即为此数组，其中的每个元素都对应一个显示在工具栏上的按钮。<code>settings.actions</code> 的生成规则会在后面进行解释。</p>
+<p>现在已有了 <code>actions</code> 对象，那么如何使用它呢？这就要看看
+<code>init()</code> 函数了，它会根据一定的规则从 <code>actions</code>
+对象中选出元素组成一个数组，数组的每一项都会生成一个按钮。下面代码中的
+<code>settings.actions</code>
+即为此数组，其中的每个元素都对应一个显示在工具栏上的按钮。<code>settings.actions</code>
+的生成规则会在后面进行解释。</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// pell.js 中的 init() 函数</span></span><br><span class="line">settings.actions.forEach(<span class="function"><span class="params">action</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 新建一个按钮元素</span></span><br><span class="line">    <span class="keyword">const</span> button = <span class="built_in">document</span>.createElement(<span class="string">&#x27;button&#x27;</span>)</span><br><span class="line">    <span class="comment">// 给按钮加上 css 样式</span></span><br><span class="line">    button.className = settings.classes.button</span><br><span class="line">    <span class="comment">// 把 icon 属性作为内容显示出来</span></span><br><span class="line">    button.innerHTML = action.icon</span><br><span class="line">    button.title = action.title</span><br><span class="line">    <span class="comment">// 把 result 属性赋给按钮作为点击事件</span></span><br><span class="line">    button.onclick = action.result</span><br><span class="line">    <span class="comment">// 将创建的按钮添加到工具栏上</span></span><br><span class="line">    actionbar.appendChild(button)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-<p>这样数组中的每个元素就都生成了一个工具栏上的按钮了。 </p>
-<h2 id="init-初始化函数"><a href="#init-初始化函数" class="headerlink" title="init() 初始化函数"></a>init() 初始化函数</h2><p>想使用 pell 编辑器时，只要调用 <code>init()</code> 函数来初始化一个编辑器即可。它接收一个 <code>setting</code> 对象作为参数，其中包含这样的一些属性：</p>
+<p>这样数组中的每个元素就都生成了一个工具栏上的按钮了。</p>
+<h2 id="init-初始化函数">init() 初始化函数</h2>
+<p>想使用 pell 编辑器时，只要调用 <code>init()</code>
+函数来初始化一个编辑器即可。它接收一个 <code>setting</code>
+对象作为参数，其中包含这样的一些属性：</p>
 <ul>
 <li><code>element</code>: 编辑器的 DOM 元素</li>
-<li><code>styleWithCSS</code>: 设置为 true 时，将会用 <code>&lt;span style=&quot;font-weight: bold;&quot;&gt;&lt;/span&gt;</code> 代替 <code>&lt;b&gt;&lt;/b&gt;</code></li>
+<li><code>styleWithCSS</code>: 设置为 true 时，将会用
+<code>&lt;span style="font-weight: bold;"&gt;&lt;/span&gt;</code> 代替
+<code>&lt;b&gt;&lt;/b&gt;</code></li>
 <li><code>actions</code></li>
 <li><code>onChange</code></li>
 </ul>
-<p>其中最重要的是 <code>actions</code>，它是一个数组，包含了你想在工具栏显示的按钮列表。</p>
-<p><code>actions</code> 数组中可以有这几种元素：</p>
-<ul>
-<li>一个字符串</li>
-<li>一个有 <code>name</code> 属性的对象</li>
-<li>一个对象，没有 <code>name</code> 属性，但有生成一个按钮的必需属性 <code>icon</code>，<code>result</code> 等</li>
-</ul>
+<p>其中最重要的是
+<code>actions</code>，它是一个数组，包含了你想在工具栏显示的按钮列表。</p>
+<p><code>actions</code> 数组中可以有这几种元素： - 一个字符串 - 一个有
+<code>name</code> 属性的对象 - 一个对象，没有 <code>name</code>
+属性，但有生成一个按钮的必需属性 <code>icon</code>，<code>result</code>
+等</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">actions: [</span><br><span class="line">  <span class="string">&#x27;bold&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;underline&#x27;</span>,</span><br><span class="line">  <span class="string">&#x27;italic&#x27;</span>,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">name</span>: <span class="string">&#x27;image&#x27;</span>,</span><br><span class="line">    <span class="attr">result</span>: <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> url = <span class="built_in">window</span>.prompt(<span class="string">&#x27;Enter the image URL&#x27;</span>)</span><br><span class="line">      <span class="keyword">if</span> (url) <span class="built_in">window</span>.pell.exec(<span class="string">&#x27;insertImage&#x27;</span>, ensureHTTP(url))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
-<p>在 <code>init()</code> 函数中会把这个 <code>actions</code>参数 和 pell.js 中定义的 <code>actions</code>对象组合起来，可以将 <code>actions</code> 对象当作一个默认设置，看以下代码：</p>
+<p>在 <code>init()</code> 函数中会把这个 <code>actions</code>参数 和
+pell.js 中定义的 <code>actions</code>对象组合起来，可以将
+<code>actions</code> 对象当作一个默认设置，看以下代码：</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// pell.js 中的 init() 函数</span></span><br><span class="line">settings.actions = settings.actions</span><br><span class="line">    ? settings.actions.map(<span class="function"><span class="params">action</span> =&gt;</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> action === <span class="string">&#x27;string&#x27;</span>) <span class="keyword">return</span> actions[action]</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果参数中传入的 action 已经在默认设置中存在，用传入的参数覆盖默认设置</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (actions[action.name]) &#123;</span><br><span class="line">            <span class="keyword">return</span> &#123; ...actions[action.name], ...action &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> action</span><br><span class="line">    &#125;)</span><br><span class="line">    : <span class="built_in">Object</span>.keys(actions).map(<span class="function"><span class="params">action</span> =&gt;</span> actions[action])</span><br></pre></td></tr></table></figure>
-<p>如果参数对象 <code>setting</code> 中不包含 <code>actions</code> 数组,  则会默认使用之前定义的 <code>actions</code> 对象来初始化。</p>
-<p>init() 函数里还有一个重要的部分，就是创建一个可编辑区域，这里创建了一个 <code>div</code> 元素，将其 <code>contentEditable</code> 属性设为 <code>true</code>，从而可以在这里使用之前提到的 <code>document.execCommand()</code> 命令了。</p>
+<p>如果参数对象 <code>setting</code> 中不包含 <code>actions</code> 数组,
+则会默认使用之前定义的 <code>actions</code> 对象来初始化。</p>
+<p>init()
+函数里还有一个重要的部分，就是创建一个可编辑区域，这里创建了一个
+<code>div</code> 元素，将其 <code>contentEditable</code> 属性设为
+<code>true</code>，从而可以在这里使用之前提到的
+<code>document.execCommand()</code> 命令了。</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建编辑区域的元素</span></span><br><span class="line">settings.element.content = <span class="built_in">document</span>.createElement(<span class="string">&#x27;div&#x27;</span>)</span><br><span class="line"><span class="comment">// 让 div 成为可编辑状态</span></span><br><span class="line">settings.element.content.contentEditable = <span class="literal">true</span></span><br><span class="line">settings.element.content.className = settings.classes.content</span><br><span class="line"><span class="comment">// 当用户输入时，更新页面的相应部分</span></span><br><span class="line">settings.element.content.oninput = <span class="function"><span class="params">event</span> =&gt;</span> </span><br><span class="line">    settings.onChange(event.target.innerHTML)</span><br><span class="line">settings.element.content.onkeydown = preventTab</span><br><span class="line">settings.element.appendChild(settings.element.content)</span><br></pre></td></tr></table></figure>
-<h2 id="流程整理"><a href="#流程整理" class="headerlink" title="流程整理"></a>流程整理</h2><p>最后以“插入链接”为例来梳理下整个编辑器的流程：</p>
-<p>一、在调用 <code>init()</code> 函数时，在参数对象的 <code>action</code> 数组中加入以下一项</p>
+<h2 id="流程整理">流程整理</h2>
+<p>最后以“插入链接”为例来梳理下整个编辑器的流程：</p>
+<p>一、在调用 <code>init()</code> 函数时，在参数对象的
+<code>action</code> 数组中加入以下一项</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">name</span>: <span class="string">&#x27;link&#x27;</span>,</span><br><span class="line">    <span class="attr">result</span>: <span class="function">() =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> url = <span class="built_in">window</span>.prompt(<span class="string">&#x27;Enter the link URL&#x27;</span>)</span><br><span class="line">        <span class="keyword">if</span> (url) <span class="built_in">window</span>.pell.exec(<span class="string">&#x27;createLink&#x27;</span>, ensureHTTP(url))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>二、在 <code>init()</code> 的运行过程中，会检查已定义的 <code>actions</code> 对象中是否有 <code>link</code> 这个属性。经检查属性确实存在</p>
+<p>二、在 <code>init()</code> 的运行过程中，会检查已定义的
+<code>actions</code> 对象中是否有 <code>link</code>
+这个属性。经检查属性确实存在</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">link: &#123;</span><br><span class="line">    <span class="attr">icon</span>: <span class="string">&#x27;&amp;#128279;&#x27;</span>,</span><br><span class="line">    <span class="attr">title</span>: <span class="string">&#x27;Link&#x27;</span>,</span><br><span class="line">    <span class="attr">result</span>: <span class="function">() =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> url = <span class="built_in">window</span>.prompt(<span class="string">&#x27;Enter the link URL&#x27;</span>)</span><br><span class="line">        <span class="keyword">if</span> (url) exec(<span class="string">&#x27;createLink&#x27;</span>, url)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>因为传入的参数中有 <code>result</code> 这一项，所以用传入的 <code>result</code> 来代替 <code>link</code> 对象中的默认值，然后将修改过的 <code>link</code> 对象放入 <code>settings.actions</code> 数组中。</p>
-<p>三、对 <code>settings.actions</code> 数组进行一次迭代来生成工具栏，<code>link</code> 对象作为其中的一项生成了一个“插入链接”的按钮。<code>result</code> 属性成为其点击事件。</p>
-<p>四、点击“插入链接”的按钮后，会让你输入一个 url，然后调用 <code>exec(&#39;createLink&#39;, url)</code> 在编辑区域插入该链接。</p>
+<p>因为传入的参数中有 <code>result</code> 这一项，所以用传入的
+<code>result</code> 来代替 <code>link</code>
+对象中的默认值，然后将修改过的 <code>link</code> 对象放入
+<code>settings.actions</code> 数组中。</p>
+<p>三、对 <code>settings.actions</code>
+数组进行一次迭代来生成工具栏，<code>link</code>
+对象作为其中的一项生成了一个“插入链接”的按钮。<code>result</code>
+属性成为其点击事件。</p>
+<p>四、点击“插入链接”的按钮后，会让你输入一个 url，然后调用
+<code>exec('createLink', url)</code> 在编辑区域插入该链接。</p>
 <p>编辑器其它按钮的功能流程也类似。</p>
-<p>这样 Pell 编辑器的大部分内容就讲解完毕了，剩余部分还需要自己去看源码。毕竟项目的代码不长，以此作为文本编辑器的入门倒不错。</p>
-<hr>
+<p>这样 Pell
+编辑器的大部分内容就讲解完毕了，剩余部分还需要自己去看源码。毕竟项目的代码不长，以此作为文本编辑器的入门倒不错。</p>
+<hr />
 <p>2017年的最后一篇文章了，再见，2017。</p>
-<p><a href="http://www.wukai.me/2017/12/31/rich-text-editor-in-less-than-200-lines-javascript/">本文原地址</a></p>
+<p><a
+href="http://www.wukai.me/2017/12/31/rich-text-editor-in-less-than-200-lines-javascript/">本文原地址</a></p>
 
     </div>
 
@@ -426,7 +483,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Document-execCommand"><span class="nav-number">1.</span> <span class="nav-text">Document.execCommand()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#actions-%E5%AF%B9%E8%B1%A1"><span class="nav-number">2.</span> <span class="nav-text">actions 对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#init-%E5%88%9D%E5%A7%8B%E5%8C%96%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">init() 初始化函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E6%95%B4%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">流程整理</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#document.execcommand"><span class="nav-number">1.</span> <span class="nav-text">Document.execCommand()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#actions-%E5%AF%B9%E8%B1%A1"><span class="nav-number">2.</span> <span class="nav-text">actions 对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#init-%E5%88%9D%E5%A7%8B%E5%8C%96%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">init() 初始化函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E6%95%B4%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">流程整理</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -442,14 +499,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-count">38</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -572,6 +629,8 @@ if (document.querySelectorAll('pre.mermaid').length) {
 }
 </script>
 
+
+  
 
   
 
