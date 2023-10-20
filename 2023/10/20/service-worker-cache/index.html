@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.wukai.me","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="大家应该都听过 service worker 这个概念，那么它究竟是什么呢？我们看下 MDN 上的解释：  Service workers essentially act as proxy servers that sit between web applications, the browser, and the network (when available). They are intend">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何使用 Service Worker 来缓存图片">
+<meta property="og:url" content="http://www.wukai.me/2023/10/20/service-worker-cache/index.html">
+<meta property="og:site_name" content="吴锴的博客">
+<meta property="og:description" content="大家应该都听过 service worker 这个概念，那么它究竟是什么呢？我们看下 MDN 上的解释：  Service workers essentially act as proxy servers that sit between web applications, the browser, and the network (when available). They are intend">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-register-output.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-sw-status.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-register-output-2.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-unregister.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-network-image-size.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-network-image-size-2.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-cache-api.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-cache-storage.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-sw-offline.png">
+<meta property="og:image" content="http://www.wukai.me/asset/images/2023-10-20-cache-storage-2.png">
+<meta property="article:published_time" content="2023-10-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-10-20T09:48:31.698Z">
+<meta property="article:author" content="noiron">
+<meta property="article:tag" content="service-worker">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.wukai.me/asset/images/2023-10-20-register-output.png">
+
+<link rel="canonical" href="http://www.wukai.me/2023/10/20/service-worker-cache/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>如何使用 Service Worker 来缓存图片 | 吴锴的博客</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-111511044-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-111511044-1');
+      }
+    </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">吴锴的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Life? Don't talk to me about life!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-demo">
+
+    <a href="/demo/" rel="section"><i class="fa fa-rocket fa-fw"></i>个人项目</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.wukai.me/2023/10/20/service-worker-cache/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="noiron">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="吴锴的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何使用 Service Worker 来缓存图片
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-10-20 00:00:00 / 修改时间：17:48:31" itemprop="dateCreated datePublished" datetime="2023-10-20T00:00:00+08:00">2023-10-20</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>大家应该都听过 service worker 这个概念，那么它究竟是什么呢？我们看下
+<a
+target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API">MDN</a>
+上的解释：</p>
+<blockquote>
+<p>Service workers essentially act as proxy servers that sit between web
+applications, the browser, and the network (when available). They are
+intended, among other things, to enable the creation of effective
+offline experiences, intercept network requests and take appropriate
+action based on whether the network is available, and update assets
+residing on the server. They will also allow access to push
+notifications and background sync APIs.</p>
+</blockquote>
+<p>Service worker 在 web
+应用、浏览器和网络之间扮演代理服务器的角色。可以用于创建有效的离线体验，劫持网络请求等。</p>
+<p>在这篇文章中我创建了一个示例项目来展示 service worker
+的基本用法及如何缓存图片。可以在<a
+target="_blank" rel="noopener" href="https://github.com/noiron/service-worker-demo">这个项目
+service-worker-demo</a> 中看到文中的代码。</p>
+<span id="more"></span>
+<h2 id="service-worker-使用基础">Service Worker 使用基础</h2>
+<p>首先使用 Vite 来创建一个新项目，运行 <code>yarn create vite</code>
+后选择 vanilla 即可。</p>
+<p>在 <code>public</code> 目录下创建一个名为 <code>sw.js</code> 的
+service worker 文件：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sw.js</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;This message is from service worker file.&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>开启开发模式 <code>yarn dev</code> 后，可以在类似
+<code>http://localhost:5173/sw.js</code> 的位置看到这个文件。</p>
+<p>Service woker 在生效前要经历注册（register）的过程，在
+<code>main.js</code> 文件中加入以下代码来注册 service worker：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="string">&#x27;serviceWorker&#x27;</span> <span class="keyword">in</span> navigator) &#123;</span><br><span class="line">  <span class="built_in">window</span>.addEventListener(<span class="string">&#x27;load&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    navigator.serviceWorker.register(<span class="string">&#x27;/sw.js&#x27;</span>).then(</span><br><span class="line">      <span class="function"><span class="keyword">function</span> (<span class="params">registration</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// Registration was successful</span></span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">&#x27;ServiceWorker registration successful&#x27;</span>);</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// Registration failed</span></span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">&#x27;ServiceWorker registration failed: &#x27;</span>, err);</span><br><span class="line">      &#125;</span><br><span class="line">    );</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>启动项目并打开页面，会在控制台看到以下内容：</p>
+<figure>
+<img src="/asset/images/2023-10-20-register-output.png"
+alt="控制台输出" />
+<figcaption aria-hidden="true">控制台输出</figcaption>
+</figure>
+<p>第一条输出来自 <code>sw.js</code> 文件，表明这个 service worker
+已经运行。第二条输出来自 <code>main.js</code> 文件中对 service worker
+注册的过程，表明成功注册了。</p>
+<p>打开 Application 标签页可以看到 service worker 状态是
+<strong>activated and is running</strong>：</p>
+<figure>
+<img src="/asset/images/2023-10-20-sw-status.png"
+alt="service worker 状态" />
+<figcaption aria-hidden="true">service worker 状态</figcaption>
+</figure>
+<p>如果这时候刷新页面，会发现控制台中少了一条输出：</p>
+<figure>
+<img src="/asset/images/2023-10-20-register-output-2.png"
+alt="控制台输出" />
+<figcaption aria-hidden="true">控制台输出</figcaption>
+</figure>
+<p>因为现在是已注册的状态了，所以这个文件不会再次运行。</p>
+<p>如果你点击 Unregister 按钮，则会取消这个 service worker
+文件的注册。之后刷新页面就会重新经历注册流程。</p>
+<figure>
+<img src="/asset/images/2023-10-20-unregister.png"
+alt="Unregister 按钮" />
+<figcaption aria-hidden="true">Unregister 按钮</figcaption>
+</figure>
+<p>有一点需要注意的是 serivce worker
+文件的位置决定了它的作用域，比如上面代码中的 <code>sw.js</code>
+可以控制整个 domain 的 <code>fetch</code> 事件。假如 service worker
+文件在 <code>/example/sw.js</code>，那么它只能看见 URL 以
+<code>/example/</code> 开头的页面(例如 <code>/example/page1/</code>,
+<code>/example/page2/</code>)上的 <code>fetch</code> 事件。</p>
+<h2 id="如何进行图片的缓存">如何进行图片的缓存</h2>
+<p>我们已经知道了如何让一个极简的 service worker
+文件正常运行，接下来看看如何进行图片的缓存。</p>
+<p>先在 html 中加入几张图片，任意放几张图片文件放到 <code>public</code>
+目录下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;/image1.png&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;/image2.png&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;/image3.png&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;/image4.png&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;/image5.png&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>此时在 Network 中查看图片请求，Size
+栏展示的是图片的大小。当然如果没有勾选 Disable cache
+的情况下，这里也可能显示 <code>(memory cache)</code> 或者
+<code>(disk cache)</code>。</p>
+<figure>
+<img src="/asset/images/2023-10-20-network-image-size.png"
+alt="Network 请求状态" />
+<figcaption aria-hidden="true">Network 请求状态</figcaption>
+</figure>
+<p>接下来修改 service worker 文件 <code>sw.js</code>，加入以下内容：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cacheName = <span class="string">&#x27;cache-name-v1&#x27;</span>;</span><br><span class="line"></span><br><span class="line">self.addEventListener(<span class="string">&#x27;install&#x27;</span>, <span class="function">(<span class="params">event</span>) =&gt;</span> &#123;</span><br><span class="line">  event.waitUntil(caches.open(cacheName));</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">self.addEventListener(<span class="string">&#x27;fetch&#x27;</span>, <span class="keyword">async</span> (event) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (event.request.destination === <span class="string">&#x27;image&#x27;</span>) &#123;</span><br><span class="line">    <span class="comment">// Open the cache</span></span><br><span class="line">    event.respondWith(</span><br><span class="line">      caches.open(cacheName).then(<span class="function">(<span class="params">cache</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// Respond with the image from the cache or from the network</span></span><br><span class="line">        <span class="keyword">return</span> cache.match(event.request).then(<span class="function">(<span class="params">cachedResponse</span>) =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">return</span> (</span><br><span class="line">            cachedResponse ||</span><br><span class="line">            fetch(event.request.url).then(<span class="function">(<span class="params">fetchedResponse</span>) =&gt;</span> &#123;</span><br><span class="line">              <span class="comment">// Add the network response to the cache for future visits.</span></span><br><span class="line">              <span class="comment">// Note: we need to make a copy of the response to save it in</span></span><br><span class="line">              <span class="comment">// the cache and use the original as the request response.</span></span><br><span class="line">              cache.put(event.request, fetchedResponse.clone());</span><br><span class="line"></span><br><span class="line">              <span class="keyword">return</span> fetchedResponse;</span><br><span class="line">            &#125;)</span><br><span class="line">          );</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;)</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>看一下这段代码的效果，为了能让更新后的 service worker
+文件生效，需要重新打开页面。现在 Size 栏展示的是
+<code>(ServiceWorker)</code>，表示图片已由 service worker
+进行了缓存。</p>
+<figure>
+<img src="/asset/images/2023-10-20-network-image-size-2.png"
+alt="Network 请求状态" />
+<figcaption aria-hidden="true">Network 请求状态</figcaption>
+</figure>
+<p>接下来解释下这段代码做了什么。</p>
+<p>我们一直在说 service worker
+可以用来缓存图片，这个缓存是放在哪里呢？这就先需要了解 <a
+target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Cache">Cache
+API</a>，Cache 接口提供了对 <code>Request / Respone</code>
+对象的持久化存储机制。你也可以在 service worker
+以外来使用它，打开控制台：</p>
+<figure>
+<img src="/asset/images/2023-10-20-cache-api.png" alt="Cache API" />
+<figcaption aria-hidden="true">Cache API</figcaption>
+</figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cacheName = <span class="string">&#x27;cache-name-v1&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">  </span><br><span class="line">caches.open(cacheName).then(<span class="function">(<span class="params">cache</span>) =&gt;</span> &#123;</span><br><span class="line"></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>这里就是先打开了 caches storage，然后依次对缓存内容进行操作。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">&#x27;fetch&#x27;</span>, <span class="keyword">async</span> (event) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (event.request.destination === <span class="string">&#x27;image&#x27;</span>) &#123;</span><br><span class="line">    event.respondWith(</span><br><span class="line">    	<span class="comment">// ...</span></span><br><span class="line">    )</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>这里监听了网络请求事件，在事件处理函数中我们就可以处理请求和响应了。先判断出这是一个图片请求：<code>event.request.destination === 'image'</code>，然后用
+<code>event.respondWith()</code> 来返回响应内容。</p>
+<p>下面这一段包含在 <code>event.respondWith()</code>
+之内，是在决定要要返回什么。先在缓存中检查请求是否已有响应缓存，如果已经有了就直接返回，否则就执行
+fetch 并将这次的响应放入缓存中。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">caches.open(cacheName).then(<span class="function">(<span class="params">cache</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> cache.match(event.request).then(<span class="function">(<span class="params">cachedResponse</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      cachedResponse ||</span><br><span class="line">      fetch(event.request.url).then(<span class="function">(<span class="params">fetchedResponse</span>) =&gt;</span> &#123;</span><br><span class="line">        cache.put(event.request, fetchedResponse.clone());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> fetchedResponse;</span><br><span class="line">      &#125;)</span><br><span class="line">    );</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>上面看到在 Network 中查看图片请求都显示来自 service worker，可以从
+Application -&gt; Cache Storage 里查看具体的缓存内容。</p>
+<figure>
+<img src="/asset/images/2023-10-20-cache-storage.png"
+alt="Cache Storage" />
+<figcaption aria-hidden="true">Cache Storage</figcaption>
+</figure>
+<h2 id="为什么要用-service-worker-缓存">为什么要用 service worker
+缓存</h2>
+<p>你可能会问用 service worker 缓存有什么好处？浏览器中不是已经有了
+memory cache 和 disk cache 了吗？</p>
+<p>一个使用场景是<strong>离线化应用</strong>，尝试对 <code>sw.js</code>
+文件做一点小改动，注释掉这个对类型的判断：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (event.request.destination === <span class="string">&#x27;image&#x27;</span>) &#123;</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>重新打开这个页面后会发现所有的资源都会走 service worker
+了，这时即使你断开网络也是可以正常展示的。</p>
+<figure>
+<img src="/asset/images/2023-10-20-sw-offline.png" alt="离线状态" />
+<figcaption aria-hidden="true">离线状态</figcaption>
+</figure>
+<p>利用 service worker
+也可以允许开发人员更精细地控制哪些资源被缓存，以及在何时更新缓存。</p>
+<h2 id="另一些优化">另一些优化</h2>
+<p>既然我们利用 service worker
+可以劫持所有图片的请求，那么还可以做些其他的优化，比如将图片修改为更加合适的格式。我们知道
+webp 是一种比 png
+更新的图片格式，一般会有更小的体积。某些图片服务可能提供这样的功能，在这样的
+url
+上（<code>http://www.example.com/1.png</code>）添加一个后缀就（`<code>http://www.example.com/1.png?format=webp</code>）得到了对应格式的图片。</p>
+<p>尝试下实现这个功能，先给用到的图片生成对应的 webp
+格式，放在同一位置，比如 image1.png 生成 image1.webp。</p>
+<p>定义一个函数来做 url 的替换，仅将后缀做个替换：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getNewUrl</span>(<span class="params">url</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> url.replace(<span class="regexp">/.png$/</span>, <span class="string">&#x27;.webp&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后改写 fetch 事件的监听函数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cacheName = <span class="string">&#x27;cache-name-v2&#x27;</span>;</span><br><span class="line"></span><br><span class="line">self.addEventListener(<span class="string">&#x27;fetch&#x27;</span>, <span class="keyword">async</span> (event) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (event.request.destination === <span class="string">&#x27;image&#x27;</span>) &#123;</span><br><span class="line">    event.respondWith(</span><br><span class="line">      caches.open(cacheName).then(<span class="function">(<span class="params">cache</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// 构建一个新的请求</span></span><br><span class="line">        <span class="keyword">const</span> newRequest = <span class="keyword">new</span> Request(</span><br><span class="line">          getNewUrl(event.request.url),</span><br><span class="line">          event.request</span><br><span class="line">        );</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> cache.match(event.request).then(<span class="function">(<span class="params">cachedResponse</span>) =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">return</span> (</span><br><span class="line">            cachedResponse ||</span><br><span class="line">            <span class="comment">// 通过新的请求来获取资源</span></span><br><span class="line">            fetch(newRequest).then(<span class="function">(<span class="params">fetchedResponse</span>) =&gt;</span> &#123;</span><br><span class="line">              cache.put(event.request, fetchedResponse.clone());</span><br><span class="line">              <span class="keyword">return</span> fetchedResponse;</span><br><span class="line">            &#125;)</span><br><span class="line">          );</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;)</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>注意这里我们将 <code>cacheName</code> 修改为了
+<code>cache-name-v2</code>，因为之前版本的 service worker 已经将一份
+<code>image1.png</code> 的缓存放在了名为 <code>cache-name-v1</code>
+的缓存中，代码检查到图片缓存请求已存在也就不会发出新的请求。新建一个
+cache key 来保存新的缓存。</p>
+<p>看下改动的效果：</p>
+<figure>
+<img src="/asset/images/2023-10-20-cache-storage-2.png"
+alt="Cache Storage" />
+<figcaption aria-hidden="true">Cache Storage</figcaption>
+</figure>
+<p>可以看到虽然图片名称仍然是 <code>image1.png</code>，但是 Content-Type
+已经改变了。这里 webp 格式几乎比 png
+格式小了一半体积，当然这主要是因为我的 png
+图片没有经过压缩处理。真实的场景中，由 png 格式转换成 webp
+不会有这么大的体积优化。</p>
+<p>关于 service worker 还有一点需要了解，因为 service worker
+可以任意修改网络请求，所以处于安全原因需要在 HTTPS 环境中才能启用。</p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><p><a
+target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers">Using
+Service Workers</a></p></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://medium.com/sessionstack-blog/how-javascript-works-service-workers-their-life-cycle-and-use-cases-52b19ad98b58">How
+JavaScript works: Service Workers, their lifecycle and use
+cases</a></p></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://developer.chrome.com/docs/workbox/caching-strategies-overview/">Strategies
+for service worker caching</a></p></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>如果我的文章对你有帮助，欢迎打赏支持！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="noiron 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.png" alt="noiron 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>noiron
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://www.wukai.me/2023/10/20/service-worker-cache/" title="如何使用 Service Worker 来缓存图片">http://www.wukai.me/2023/10/20/service-worker-cache/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/service-worker/" rel="tag"># service-worker</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/05/16/csapp-datalab/" rel="prev" title="《深入理解计算机系统 CSAPP》Data Lab 记录">
+      <i class="fa fa-chevron-left"></i> 《深入理解计算机系统 CSAPP》Data Lab 记录
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#service-worker-%E4%BD%BF%E7%94%A8%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">Service Worker 使用基础</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E5%9B%BE%E7%89%87%E7%9A%84%E7%BC%93%E5%AD%98"><span class="nav-number">2.</span> <span class="nav-text">如何进行图片的缓存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8-service-worker-%E7%BC%93%E5%AD%98"><span class="nav-number">3.</span> <span class="nav-text">为什么要用 service worker
+缓存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%A6%E4%B8%80%E4%BA%9B%E4%BC%98%E5%8C%96"><span class="nav-number">4.</span> <span class="nav-text">另一些优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="noiron"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">noiron</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/noiron" title="GitHub → https://github.com/noiron" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wukai2048@gmail.com" title="E-Mail → mailto:wukai2048@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-robot"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">noiron</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+if (document.querySelectorAll('pre.mermaid').length) {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js', () => {
+    mermaid.initialize({
+      theme    : 'neutral',
+      logLevel : 3,
+      flowchart: { curve     : 'linear' },
+      gantt    : { axisFormat: '%m/%d/%Y' },
+      sequence : { actorMargin: 50 }
+    });
+  }, window.mermaid);
+}
+</script>
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '684d40de22e47860da99',
+      clientSecret: '5217c37e4a30ba8e3bb6a6658e1023d458139164',
+      repo        : 'noiron.github.io',
+      owner       : 'noiron',
+      admin       : ['noiron'],
+      id          : '489af4a5bd5898f5b93ffdccaf2d4364',
+        language: '',
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
